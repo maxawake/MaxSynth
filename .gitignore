@@ -39,3 +39,7 @@
 
 # debug information files
 *.dwo
+
+Builds/LinuxMakefile/build
+Builds/LinuxMakefile/make_helpers
+Builds/LinuxMakefile/pre_build

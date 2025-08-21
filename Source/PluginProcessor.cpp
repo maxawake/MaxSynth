@@ -144,18 +144,37 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    float sampleRate = 48000.0f; // Default sample rate, can be set dynamically
+    float dt = 1.0 / sampleRate;
+    float decayTime = 0.1f; // Example decay time
+    float volume = 0.5f; // Example volume
+    std::cout << "i got caled" << this->t << std::endl;
 
-        // ..do something to the data...
+
+    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer(channel);
+        float localTime = t; // Use local copy for this channel
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            // Calculate phase from time
+            float currentPhase = 2.0f * juce::MathConstants<float>::pi * freq * localTime;
+            
+            // Apply exponential decay
+            float decayFactor = std::exp(-localTime / decayTime);
+            float currentVolume = volume * decayFactor;
+            
+            // Generate sine wave with decay
+            channelData[sample] = currentVolume * std::sin(currentPhase);
+            
+            // Increment time
+            localTime += dt;
+        }
     }
+    
+    // Update time for next buffer
+    t += dt * buffer.getNumSamples();
 }
 
 //==============================================================================

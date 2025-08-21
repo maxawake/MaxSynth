@@ -52,6 +52,9 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    float t = 0.0f;
+    float freq = 440.0f; // Default frequency for the sine wave
+    float phase = 0.0f; // Phase for the sine wave
 
 private:
     //==============================================================================

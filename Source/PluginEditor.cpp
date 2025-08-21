@@ -73,6 +73,8 @@ void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int m
         postMessageToList(m, "On-Screen Keyboard");
     }
     std::cout << "Note On: " << midiNoteNumber << std::endl;
+    audioProcessor.freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+    audioProcessor.t = 0.0f; // Reset time for the new note
 }
 
 void MaxSynthAudioProcessorEditor::handleNoteOff(juce::MidiKeyboardState *, int midiChannel, int midiNoteNumber, float /*velocity*/)

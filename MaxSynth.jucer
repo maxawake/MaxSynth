@@ -7,8 +7,10 @@
               cppLanguageStandard="20">
   <MAINGROUP id="dVbanL" name="MaxSynth">
     <GROUP id="{5B4867C1-D1C8-178F-2293-09981218FAC4}" name="Source">
-      <FILE id="rOFXe3" name="Synth.cpp" compile="1" resource="0" file="Source/Synth.cpp"/>
-      <FILE id="DgzqM4" name="Synth.h" compile="0" resource="0" file="Source/Synth.h"/>
+      <FILE id="bGGCuD" name="SynthVoice.cpp" compile="1" resource="0" file="Source/SynthVoice.cpp"/>
+      <FILE id="RVPysm" name="SynthVoice.h" compile="0" resource="0" file="Source/SynthVoice.h"/>
+      <FILE id="dXfM9Y" name="SynthSound.cpp" compile="1" resource="0" file="Source/SynthSound.cpp"/>
+      <FILE id="ZZokb0" name="SynthSound.h" compile="0" resource="0" file="Source/SynthSound.h"/>
       <FILE id="ee7Yr3" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="x8QNqH" name="PluginProcessor.h" compile="0" resource="0"

@@ -8,6 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "SynthVoice.h"
+#include "SynthSound.h"
 
 //==============================================================================
 MaxSynthAudioProcessor::MaxSynthAudioProcessor()
@@ -22,6 +24,11 @@ MaxSynthAudioProcessor::MaxSynthAudioProcessor()
                        )
 #endif
 {
+    synth.addSound (new SynthSound());
+    
+    // Add multiple voices for polyphony (typically 8-16 voices)
+    for (int i = 0; i < 8; ++i)
+        synth.addVoice (new SynthVoice());
 }
 
 MaxSynthAudioProcessor::~MaxSynthAudioProcessor()
@@ -92,9 +99,16 @@ void MaxSynthAudioProcessor::changeProgramName (int index, const juce::String& n
 
 //==============================================================================
 void MaxSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
-{
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+{   
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+
+    for (int i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        {
+            voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+        }
+    }
 }
 
 void MaxSynthAudioProcessor::releaseResources()
@@ -135,46 +149,10 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    float sampleRate = 48000.0f; // Default sample rate, can be set dynamically
-    float dt = 1.0 / sampleRate;
-    float decayTime = 0.1f; // Example decay time
-    float volume = 0.5f; // Example volume
-    std::cout << "i got caled" << this->t << std::endl;
-
-
-    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer(channel);
-        float localTime = t; // Use local copy for this channel
-
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            // Calculate phase from time
-            float currentPhase = 2.0f * juce::MathConstants<float>::pi * freq * localTime;
-            
-            // Apply exponential decay
-            float decayFactor = std::exp(-localTime / decayTime);
-            float currentVolume = volume * decayFactor;
-            
-            // Generate sine wave with decay
-            channelData[sample] = currentVolume * std::sin(currentPhase);
-            
-            // Increment time
-            localTime += dt;
-        }
-    }
-    
-    // Update time for next buffer
-    t += dt * buffer.getNumSamples();
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================

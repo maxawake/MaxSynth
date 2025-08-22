@@ -31,8 +31,9 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
 
     // if no enabled devices were found just use the first one in the list
     if (midiInputList.getSelectedId() == 0)
-        setMidiInput(0);
+        setMidiInput(2);
 
+    setMidiInput(2);
     // startTimer (400);
     addAndMakeVisible(keyboardComponent);
     keyboardState.addListener(this);
@@ -73,8 +74,6 @@ void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int m
         postMessageToList(m, "On-Screen Keyboard");
     }
     std::cout << "Note On: " << midiNoteNumber << std::endl;
-    audioProcessor.freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    audioProcessor.t = 0.0f; // Reset time for the new note
 }
 
 void MaxSynthAudioProcessorEditor::handleNoteOff(juce::MidiKeyboardState *, int midiChannel, int midiNoteNumber, float /*velocity*/)

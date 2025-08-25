@@ -75,7 +75,6 @@ void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int m
         auto m = juce::MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity);
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
         audioProcessor.getMidiMessageCollector().addMessageToQueue(m);
-        postMessageToList(m, "On-Screen Keyboard");
     }
 }
 
@@ -87,6 +86,22 @@ void MaxSynthAudioProcessorEditor::handleNoteOff(juce::MidiKeyboardState *, int 
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
 
         audioProcessor.getMidiMessageCollector().addMessageToQueue(m);
-        postMessageToList(m, "On-Screen Keyboard");
     }
+}
+
+void MaxSynthAudioProcessorEditor::setMidiInput(int index)
+{
+    auto list = juce::MidiInput::getAvailableDevices();
+
+    deviceManager.removeMidiInputDeviceCallback(list[lastInputIndex].identifier, this);
+
+    auto newInput = list[index];
+
+    if (!deviceManager.isMidiInputDeviceEnabled(newInput.identifier))
+        deviceManager.setMidiInputDeviceEnabled(newInput.identifier, true);
+
+    deviceManager.addMidiInputDeviceCallback(newInput.identifier, this);
+    midiInputList.setSelectedId(index + 1, juce::dontSendNotification);
+
+    lastInputIndex = index;
 }

@@ -55,9 +55,7 @@ public:
     juce::MidiMessageCollector& getMidiMessageCollector() { return midiCollector; }
 
 private:
-    juce::Synthesiser synth; // Synthesiser for handling voices and sounds
-    //
-    
+    juce::Synthesiser synth; 
     juce::MidiMessageCollector midiCollector;
 
     //==============================================================================

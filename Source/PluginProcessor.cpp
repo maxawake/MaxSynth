@@ -27,7 +27,7 @@ MaxSynthAudioProcessor::MaxSynthAudioProcessor()
     synth.addSound (new SynthSound());
     
     // Add multiple voices for polyphony (typically 8-16 voices)
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 10; ++i)
         synth.addVoice (new SynthVoice());
 }
 
@@ -116,6 +116,7 @@ void MaxSynthAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations

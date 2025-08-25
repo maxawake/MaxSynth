@@ -29,7 +29,7 @@ public:
 
 private:
     float freq = 440.0f; // Frequency of the note
-    float volume = 0.5f; // Volume of the note
+    float volume = 1.0f; // Volume of the note
 
     juce::ADSR envelope; // Envelope for the note
     juce::ADSR::Parameters envelopeParams; // Parameters for the envelope

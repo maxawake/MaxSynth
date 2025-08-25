@@ -13,6 +13,8 @@
 MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcessor &p)
     : AudioProcessorEditor(&p), audioProcessor(p), keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
 {
+    // Initialize audio device manager
+    // deviceManager.initialiseWithDefaultDevices(0, 2); // 0 inputs, 2 outputs
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     // setAudioChannels (0, 2);
@@ -30,10 +32,11 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
     }
 
     // if no enabled devices were found just use the first one in the list
-    if (midiInputList.getSelectedId() == 0)
-        setMidiInput(2);
+    // if (midiInputList.getSelectedId() == 0)
+    //     setMidiInput(0);
 
-    setMidiInput(2);
+    setMidiInput(1);
+
     // startTimer (400);
     addAndMakeVisible(keyboardComponent);
     keyboardState.addListener(this);
@@ -71,9 +74,9 @@ void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int m
     {
         auto m = juce::MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity);
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
+        audioProcessor.getMidiMessageCollector().addMessageToQueue(m);
         postMessageToList(m, "On-Screen Keyboard");
     }
-    std::cout << "Note On: " << midiNoteNumber << std::endl;
 }
 
 void MaxSynthAudioProcessorEditor::handleNoteOff(juce::MidiKeyboardState *, int midiChannel, int midiNoteNumber, float /*velocity*/)
@@ -82,6 +85,8 @@ void MaxSynthAudioProcessorEditor::handleNoteOff(juce::MidiKeyboardState *, int 
     {
         auto m = juce::MidiMessage::noteOff(midiChannel, midiNoteNumber);
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
+
+        audioProcessor.getMidiMessageCollector().addMessageToQueue(m);
         postMessageToList(m, "On-Screen Keyboard");
     }
 }

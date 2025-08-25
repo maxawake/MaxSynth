@@ -52,9 +52,14 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    juce::MidiMessageCollector& getMidiMessageCollector() { return midiCollector; }
 
 private:
     juce::Synthesiser synth; // Synthesiser for handling voices and sounds
+    //
+    
+    juce::MidiMessageCollector midiCollector;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MaxSynthAudioProcessor)
 };

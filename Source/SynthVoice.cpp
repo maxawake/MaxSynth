@@ -59,7 +59,7 @@ void SynthVoice::controllerMoved (int controllerNumber, int newValue)
 }
 
 void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
-{
+{   
     // Check if the voice should be playing
     if (!isVoiceActive())
         return;
@@ -98,7 +98,7 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     envelope.setSampleRate(sampleRate);
     
     // Set more reasonable envelope parameters
-    envelopeParams.attack = 0.0f;   // Quick attack (10ms)
+    envelopeParams.attack = 0.1f;   // Quick attack (10ms)
     envelopeParams.decay = 0.2f;     // Moderate decay (200ms)
     envelopeParams.sustain = 0.7f;   // Good sustain level
     envelopeParams.release = 0.3f;   // Moderate release (300ms)
@@ -114,5 +114,5 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     oscillator.prepare(spec);
     oscillator.setFrequency(freq);
     gain.prepare(spec);
-    gain.setGainLinear(0.3f); // Set a safe default volume
+    gain.setGainLinear(volume); // Set a safe default volume
 }

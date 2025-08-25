@@ -4,7 +4,7 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
               pluginFormats="buildStandalone,buildVST3" maxBinaryFileSize="20971520"
-              cppLanguageStandard="20">
+              cppLanguageStandard="17">
   <MAINGROUP id="dVbanL" name="MaxSynth">
     <GROUP id="{5B4867C1-D1C8-178F-2293-09981218FAC4}" name="Source">
       <FILE id="bGGCuD" name="SynthVoice.cpp" compile="1" resource="0" file="Source/SynthVoice.cpp"/>

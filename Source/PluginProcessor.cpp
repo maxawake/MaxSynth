@@ -101,6 +101,7 @@ void MaxSynthAudioProcessor::changeProgramName (int index, const juce::String& n
 void MaxSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {   
     synth.setCurrentPlaybackSampleRate(sampleRate);
+    midiCollector.reset(sampleRate);  // Add this line
 
     for (int i = 0; i < synth.getNumVoices(); ++i)
     {
@@ -151,6 +152,15 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+    midiCollector.removeNextBlockOfMessages(midiMessages, buffer.getNumSamples());
+
+    // Debug MIDI messages
+    for (const auto metadata : midiMessages)
+    {
+        auto message = metadata.getMessage();
+        std::cout << "MIDI: " << message.getDescription() << std::endl;
+    }
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }

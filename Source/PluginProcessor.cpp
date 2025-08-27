@@ -21,7 +21,7 @@ MaxSynthAudioProcessor::MaxSynthAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts(*this, nullptr, "Parameters", createParameters())
 #endif
 {
     synth.addSound (new SynthSound());
@@ -70,7 +70,7 @@ bool MaxSynthAudioProcessor::isMidiEffect() const
 
 double MaxSynthAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+    return 2.0;
 }
 
 int MaxSynthAudioProcessor::getNumPrograms()
@@ -163,6 +163,20 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
         std::cout << "MIDI: " << message.getDescription() << std::endl;
     }
 
+    for (auto i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto* voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        {
+            auto& attack = *apvts.getRawParameterValue("attack");
+            auto& decay = *apvts.getRawParameterValue("decay");
+            auto& sustain = *apvts.getRawParameterValue("sustain");
+            auto& release = *apvts.getRawParameterValue("release");
+            
+
+            voice->updateEnvelope(attack, decay, sustain, release);
+        }
+    }
+
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
@@ -196,4 +210,17 @@ void MaxSynthAudioProcessor::setStateInformation (const void* data, int sizeInBy
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MaxSynthAudioProcessor();
+}
+
+
+juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 1.0f, 0.1f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 1.0f, 0.2f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.7f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 1.0f, 0.3f));
+
+    return { parameters.begin(), parameters.end() };
 }

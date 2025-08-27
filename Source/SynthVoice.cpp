@@ -21,6 +21,37 @@ SynthVoice::~SynthVoice()
     // Destructor logic if needed
 }
 
+void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels)
+{
+    // Prepare the voice for playback
+    envelope.setSampleRate(sampleRate);
+    
+    
+
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+    spec.numChannels = numChannels;
+
+    // Prepare the DSP components
+    oscillator.prepare(spec);
+    oscillator.setFrequency(freq);
+    gain.prepare(spec);
+    gain.setGainLinear(volume); // Set a safe default volume
+}
+
+void SynthVoice::updateEnvelope(const float attack, const float decay, const float sustain, const float release)
+{
+    // Set more reasonable envelope parameters
+    envelopeParams.attack = attack;
+    envelopeParams.decay = decay;
+    envelopeParams.sustain = sustain;
+    envelopeParams.release = release;
+
+    // Update the envelope parameters 
+    envelope.setParameters(envelopeParams);
+}
+
 bool SynthVoice::canPlaySound(juce::SynthesiserSound* sound)
 {
     return dynamic_cast<SynthSound*>(sound) != nullptr;
@@ -92,27 +123,3 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
         clearCurrentNote();
 }
 
-void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels)
-{
-    // Prepare the voice for playback
-    envelope.setSampleRate(sampleRate);
-    
-    // Set more reasonable envelope parameters
-    envelopeParams.attack = 0.1f;   // Quick attack (10ms)
-    envelopeParams.decay = 0.2f;     // Moderate decay (200ms)
-    envelopeParams.sustain = 0.7f;   // Good sustain level
-    envelopeParams.release = 0.3f;   // Moderate release (300ms)
-
-    envelope.setParameters(envelopeParams);
-
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
-    spec.numChannels = numChannels;
-
-    // Prepare the DSP components
-    oscillator.prepare(spec);
-    oscillator.setFrequency(freq);
-    gain.prepare(spec);
-    gain.setGainLinear(volume); // Set a safe default volume
-}

@@ -37,9 +37,31 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
 
     setMidiInput(1);
 
-    // startTimer (400);
     addAndMakeVisible(keyboardComponent);
     keyboardState.addListener(this);
+
+    using sliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+
+    attackAttachment = std::make_unique<sliderAttachment>(audioProcessor.apvts, "attack", attackSlider);
+    decayAttachment = std::make_unique<sliderAttachment>(audioProcessor.apvts, "decay", decaySlider);
+    sustainAttachment = std::make_unique<sliderAttachment>(audioProcessor.apvts, "sustain", sustainSlider);
+    releaseAttachment = std::make_unique<sliderAttachment>(audioProcessor.apvts, "release", releaseSlider);
+    waveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts, "waveform", waveformSelector);
+
+    attackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    attackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    decaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    decaySlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    sustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    sustainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    releaseSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+
+    addAndMakeVisible(attackSlider);
+    addAndMakeVisible(decaySlider);
+    addAndMakeVisible(sustainSlider);
+    addAndMakeVisible(releaseSlider);
+    addAndMakeVisible(waveformSelector);
 }
 
 MaxSynthAudioProcessorEditor::~MaxSynthAudioProcessorEditor()
@@ -66,6 +88,12 @@ void MaxSynthAudioProcessorEditor::resized()
     auto area = getLocalBounds();
 
     keyboardComponent.setBounds(area.removeFromTop(80).reduced(8));
+
+    attackSlider.setBounds(area.removeFromLeft(40).reduced(8));
+    decaySlider.setBounds(area.removeFromLeft(40).reduced(8));
+    sustainSlider.setBounds(area.removeFromLeft(40).reduced(8));
+    releaseSlider.setBounds(area.removeFromLeft(40).reduced(8));
+    waveformSelector.setBounds(area.removeFromLeft(40).reduced(8));
 }
 
 void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int midiChannel, int midiNoteNumber, float velocity)

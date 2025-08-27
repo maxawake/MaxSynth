@@ -47,5 +47,17 @@ private:
     juce::Label midiInputListLabel;
     juce::MidiKeyboardState keyboardState;
     juce::MidiKeyboardComponent keyboardComponent;
+
+    juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider;
+    juce::ComboBox waveformSelector;
+
+    using sliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+
+    std::unique_ptr<sliderAttachment> attackAttachment;
+    std::unique_ptr<sliderAttachment> decayAttachment;
+    std::unique_ptr<sliderAttachment> sustainAttachment;
+    std::unique_ptr<sliderAttachment> releaseAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MaxSynthAudioProcessorEditor)
 };

@@ -54,9 +54,12 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     juce::MidiMessageCollector& getMidiMessageCollector() { return midiCollector; }
 
+    juce::AudioProcessorValueTreeState apvts;
+
 private:
     juce::Synthesiser synth; 
     juce::MidiMessageCollector midiCollector;
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MaxSynthAudioProcessor)

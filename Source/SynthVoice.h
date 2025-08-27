@@ -18,14 +18,15 @@ class SynthVoice : public juce::SynthesiserVoice
 public:
     SynthVoice();
     ~SynthVoice();
-
+    void prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels);
     bool canPlaySound (juce::SynthesiserSound* sound) override;
     void startNote (int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int currentPitchWheelPosition) override;
     void stopNote (float velocity, bool allowTailOff) override;
     void pitchWheelMoved (int newValue) override;
     void controllerMoved (int controllerNumber, int newValue) override;
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
-    void prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels);
+
+    void updateEnvelope(const float attack, const float decay, const float sustain, const float release);
 
 private:
     float freq = 440.0f; // Frequency of the note

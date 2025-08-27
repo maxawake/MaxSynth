@@ -26,7 +26,12 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     // Prepare the voice for playback
     envelope.setSampleRate(sampleRate);
     
-    
+    // Initialize with default envelope parameters
+    envelopeParams.attack = 0.1f;
+    envelopeParams.decay = 0.2f;
+    envelopeParams.sustain = 0.7f;
+    envelopeParams.release = 0.3f;
+    envelope.setParameters(envelopeParams);
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -74,9 +79,9 @@ void SynthVoice::stopNote (float velocity, bool allowTailOff)
     // Stop the note with the given velocity
     envelope.noteOff();
     
-    // If not allowing tail off, clear the voice immediately
-    if (!allowTailOff)
-        clearCurrentNote();
+    // // If not allowing tail off, clear the voice immediately
+    // if (!allowTailOff)
+    //     clearCurrentNote();
 }
 
 void SynthVoice::pitchWheelMoved (int newValue)
@@ -109,8 +114,17 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
     // Apply gain
     gain.process(context);
     
-    // Apply envelope to the buffer
-    envelope.applyEnvelopeToBuffer(synthBuffer, 0, numSamples);
+    // Apply envelope to each sample manually for more control
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        auto envelopeLevel = envelope.getNextSample();
+        
+        for (int channel = 0; channel < synthBuffer.getNumChannels(); ++channel)
+        {
+            synthBuffer.setSample(channel, sample, 
+                synthBuffer.getSample(channel, sample) * envelopeLevel);
+        }
+    }
     
     // Add the synthesized audio to the output buffer
     for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)

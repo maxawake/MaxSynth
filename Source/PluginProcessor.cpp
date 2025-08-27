@@ -217,10 +217,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
 
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.0f, 1.0f, 0.1f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.0f, 1.0f, 0.2f));
+    // More practical ranges: Attack, Decay, Release in seconds (0.01 to 5.0 seconds)
+    // Sustain as a level (0.0 to 1.0)
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.01f, 5.0f, 0.1f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.2f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.7f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.0f, 1.0f, 0.3f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.3f));
 
     return { parameters.begin(), parameters.end() };
 }

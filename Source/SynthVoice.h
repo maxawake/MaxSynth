@@ -35,6 +35,6 @@ private:
     juce::ADSR envelope; // Envelope for the note
     juce::ADSR::Parameters envelopeParams; // Parameters for the envelope
 
-    juce::dsp::Oscillator<float> oscillator { [](float x) { return std::sinf(x); } }; // Oscillator for generating the sine wave
+    juce::dsp::Oscillator<float> oscillator { [](float x) { return x / juce::MathConstants<float>::pi; } }; // Oscillator for generating the sine wave
     juce::dsp::Gain<float> gain; // Gain for volume control
 };

@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Source",
+                "${workspaceFolder}/Components",
+                "/usr/include/freetype2",
+                "${workspaceFolder}/JuceLibraryCode"
+            ],
+            "defines": [
+                "LINUX=1",
+                "DEBUG=1",
+                "JUCE_APP_VERSION=1.0.0",
+                "JUCE_APP_VERSION_HEX=0x10000"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compileCommands": "${workspaceFolder}/compile_commands.json"
+        }
+    ],
+    "version": 4
+}

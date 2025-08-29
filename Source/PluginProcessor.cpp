@@ -21,8 +21,9 @@ MaxSynthAudioProcessor::MaxSynthAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), apvts(*this, nullptr, "Parameters", createParameters())
+                       ), 
 #endif
+    apvts(*this, nullptr, "Parameters", createParameters())                   
 {
     synth.addSound (new SynthSound());
     

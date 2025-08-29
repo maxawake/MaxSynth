@@ -54,10 +54,12 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     juce::MidiMessageCollector& getMidiMessageCollector() { return midiCollector; }
 
-    juce::AudioProcessorValueTreeState apvts;
+    juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
 
 private:
     juce::Synthesiser synth; 
+    juce::AudioProcessorValueTreeState apvts;
+
     juce::MidiMessageCollector midiCollector;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

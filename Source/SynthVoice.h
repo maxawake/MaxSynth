@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "SynthSound.h"
+#include "../Data/ADSRData.h"
 
 class SynthVoice : public juce::SynthesiserVoice
 {
@@ -25,15 +26,12 @@ public:
     void pitchWheelMoved (int newValue) override;
     void controllerMoved (int controllerNumber, int newValue) override;
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
-
     void updateEnvelope(const float attack, const float decay, const float sustain, const float release);
 
 private:
     float freq = 440.0f; // Frequency of the note
     float volume = 1.0f; // Volume of the note
-
-    juce::ADSR envelope; // Envelope for the note
-    juce::ADSR::Parameters envelopeParams; // Parameters for the envelope
+    ADSRData adsr; // ADSR envelope
 
     juce::dsp::Oscillator<float> oscillator { [](float x) { return x / juce::MathConstants<float>::pi; } }; // Oscillator for generating the sine wave
     juce::dsp::Gain<float> gain; // Gain for volume control

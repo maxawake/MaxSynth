@@ -24,14 +24,7 @@ SynthVoice::~SynthVoice()
 void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels)
 {
     // Prepare the voice for playback
-    envelope.setSampleRate(sampleRate);
-    
-    // Initialize with default envelope parameters
-    envelopeParams.attack = 0.1f;
-    envelopeParams.decay = 0.2f;
-    envelopeParams.sustain = 0.7f;
-    envelopeParams.release = 0.3f;
-    envelope.setParameters(envelopeParams);
+    adsr.setSampleRate(sampleRate);
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -45,17 +38,7 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     gain.setGainLinear(volume); // Set a safe default volume
 }
 
-void SynthVoice::updateEnvelope(const float attack, const float decay, const float sustain, const float release)
-{
-    // Set more reasonable envelope parameters
-    envelopeParams.attack = attack;
-    envelopeParams.decay = decay;
-    envelopeParams.sustain = sustain;
-    envelopeParams.release = release;
 
-    // Update the envelope parameters 
-    envelope.setParameters(envelopeParams);
-}
 
 bool SynthVoice::canPlaySound(juce::SynthesiserSound* sound)
 {
@@ -71,13 +54,13 @@ void SynthVoice::startNote (int midiNoteNumber, float velocity, juce::Synthesise
     // Set gain based on velocity to prevent clipping
     gain.setGainLinear(velocity * 0.3f); // Scale down to prevent clipping
     
-    envelope.noteOn();
+    adsr.noteOn();
 }
 
 void SynthVoice::stopNote (float velocity, bool allowTailOff)
 {
     // Stop the note with the given velocity
-    envelope.noteOff();
+    adsr.noteOff();
     
     // // If not allowing tail off, clear the voice immediately
     // if (!allowTailOff)
@@ -117,7 +100,7 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
     // Apply envelope to each sample manually for more control
     for (int sample = 0; sample < numSamples; ++sample)
     {
-        auto envelopeLevel = envelope.getNextSample();
+        auto envelopeLevel = adsr.getNextSample();
         
         for (int channel = 0; channel < synthBuffer.getNumChannels(); ++channel)
         {
@@ -133,7 +116,11 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
     }
     
     // Clear the voice if the envelope has finished
-    if (!envelope.isActive())
+    if (!adsr.isActive())
         clearCurrentNote();
 }
 
+void SynthVoice::updateEnvelope(const float attack, const float decay, const float sustain, const float release)
+{
+    adsr.updateEnvelope(attack, decay, sustain, release);
+}

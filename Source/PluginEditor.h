@@ -12,6 +12,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "../Components/ADSRComponent.h"
+#include "../Components/FilterComponent.h"
+#include "../Components/OscillatorComponent.h"
 
 class MaxSynthAudioProcessorEditor : public juce::AudioProcessorEditor,
                                      private juce::MidiInputCallback,
@@ -61,6 +63,8 @@ private:
 
     MaxSynthAudioProcessor &audioProcessor;
     ADSRComponent adsrComponent;
+    FilterComponent filterComponent;
+    OscillatorComponent oscillatorComponent;
 
     juce::AudioDeviceManager deviceManager; 
     juce::MidiKeyboardState keyboardState;

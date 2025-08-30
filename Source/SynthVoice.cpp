@@ -14,6 +14,9 @@ SynthVoice::SynthVoice()
 {
     // Initialize the oscillator and gain
     gain.setGainLinear(volume);
+    
+    // Initialize with sine wave
+    updateWaveform(0);
 }
 
 SynthVoice::~SynthVoice()
@@ -36,6 +39,12 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     oscillator.setFrequency(freq);
     gain.prepare(spec);
     gain.setGainLinear(volume); // Set a safe default volume
+
+    filter.prepare(spec);
+    filter.setMode(juce::dsp::LadderFilterMode::LPF24); // Set filter mode
+    filter.setCutoffFrequencyHz(20000.0f); // Set a high default cutoff
+    filter.setResonance(0.1f); // Set a low default resonance
+    filter.setEnabled(true); // Enable the filter
 }
 
 
@@ -97,17 +106,11 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
     // Apply gain
     gain.process(context);
     
-    // Apply envelope to each sample manually for more control
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        auto envelopeLevel = adsr.getNextSample();
-        
-        for (int channel = 0; channel < synthBuffer.getNumChannels(); ++channel)
-        {
-            synthBuffer.setSample(channel, sample, 
-                synthBuffer.getSample(channel, sample) * envelopeLevel);
-        }
-    }
+    // Apply filter
+    filter.process(context);
+
+    // Apply ADSR envelope
+    adsr.applyEnvelopeToBuffer(synthBuffer, 0, numSamples);
     
     // Add the synthesized audio to the output buffer
     for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
@@ -123,4 +126,63 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
 void SynthVoice::updateEnvelope(const float attack, const float decay, const float sustain, const float release)
 {
     adsr.updateEnvelope(attack, decay, sustain, release);
+}
+
+void SynthVoice::updateFilter(const float cutoff, const float resonance, const int mode)
+{
+    filter.setCutoffFrequencyHz(cutoff);
+    filter.setResonance(resonance);
+    
+    // Map the mode parameter to LadderFilterMode
+    switch (mode)
+    {
+        case 0: filter.setMode(juce::dsp::LadderFilterMode::LPF12); break;
+        case 1: filter.setMode(juce::dsp::LadderFilterMode::LPF24); break;
+        case 2: filter.setMode(juce::dsp::LadderFilterMode::HPF12); break;
+        case 3: filter.setMode(juce::dsp::LadderFilterMode::HPF24); break;
+        case 4: filter.setMode(juce::dsp::LadderFilterMode::BPF12); break;
+        case 5: filter.setMode(juce::dsp::LadderFilterMode::BPF24); break;
+        default: filter.setMode(juce::dsp::LadderFilterMode::LPF24); break;
+    }
+}
+
+void SynthVoice::updateWaveform(const int waveformType)
+{
+    currentWaveform = waveformType;
+    
+    switch (waveformType)
+    {
+        case 0: // Sine
+            oscillator.initialise([](float x) { return std::sin(x); });
+            break;
+            
+        case 1: // Square
+            oscillator.initialise([](float x) { 
+                return x < 0.0f ? -1.0f : 1.0f;
+            });
+            break;
+            
+        case 2: // Sawtooth
+            oscillator.initialise([](float x) { 
+                return x / juce::MathConstants<float>::pi;
+            });
+            break;
+            
+        case 3: // Triangle
+            oscillator.initialise([](float x) { 
+                return 2.0f * std::abs(2.0f * (x / juce::MathConstants<float>::twoPi - std::floor(x / juce::MathConstants<float>::twoPi + 0.5f))) - 1.0f;
+            });
+            break;
+            
+        case 4: // Noise
+            oscillator.initialise([this](float x) { 
+                juce::ignoreUnused(x);
+                return random.nextFloat() * 2.0f - 1.0f;
+            });
+            break;
+            
+        default: // Default to sine
+            oscillator.initialise([](float x) { return std::sin(x); });
+            break;
+    }
 }

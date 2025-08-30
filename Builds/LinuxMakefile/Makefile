@@ -117,6 +117,8 @@ OBJECTS_STANDALONE_PLUGIN := \
 
 OBJECTS_SHARED_CODE := \
   $(JUCE_OBJDIR)/ADSRComponent_17d28d97.o \
+  $(JUCE_OBJDIR)/FilterComponent_fa51f1c1.o \
+  $(JUCE_OBJDIR)/OscillatorComponent_9a30ba19.o \
   $(JUCE_OBJDIR)/ADSRData_186a11c6.o \
   $(JUCE_OBJDIR)/SynthVoice_279f55df.o \
   $(JUCE_OBJDIR)/SynthSound_f854073c.o \
@@ -213,6 +215,16 @@ $(JUCE_OBJDIR)/include_juce_audio_plugin_client_Standalone_1a871192.o: ../../Juc
 $(JUCE_OBJDIR)/ADSRComponent_17d28d97.o: ../../Components/ADSRComponent.cpp
 	-$(V_AT)mkdir -p $(@D)
 	@echo "Compiling ADSRComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) $(JUCE_CPPFLAGS_SHARED_CODE) $(JUCE_CFLAGS_SHARED_CODE) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/FilterComponent_fa51f1c1.o: ../../Components/FilterComponent.cpp
+	-$(V_AT)mkdir -p $(@D)
+	@echo "Compiling FilterComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) $(JUCE_CPPFLAGS_SHARED_CODE) $(JUCE_CFLAGS_SHARED_CODE) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/OscillatorComponent_9a30ba19.o: ../../Components/OscillatorComponent.cpp
+	-$(V_AT)mkdir -p $(@D)
+	@echo "Compiling OscillatorComponent.cpp"
 	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) $(JUCE_CPPFLAGS_SHARED_CODE) $(JUCE_CFLAGS_SHARED_CODE) -o "$@" -c "$<"
 
 $(JUCE_OBJDIR)/ADSRData_186a11c6.o: ../../Data/ADSRData.cpp

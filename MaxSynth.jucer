@@ -10,6 +10,14 @@
       <FILE id="DAkZls" name="ADSRComponent.cpp" compile="1" resource="0"
             file="Components/ADSRComponent.cpp"/>
       <FILE id="zwswxU" name="ADSRComponent.h" compile="0" resource="0" file="Components/ADSRComponent.h"/>
+      <FILE id="YrAFSn" name="FilterComponent.cpp" compile="1" resource="0"
+            file="Components/FilterComponent.cpp"/>
+      <FILE id="tem0rY" name="FilterComponent.h" compile="0" resource="0"
+            file="Components/FilterComponent.h"/>
+      <FILE id="puP01i" name="OscillatorComponent.cpp" compile="1" resource="0"
+            file="Components/OscillatorComponent.cpp"/>
+      <FILE id="JuVTXp" name="OscillatorComponent.h" compile="0" resource="0"
+            file="Components/OscillatorComponent.h"/>
     </GROUP>
     <GROUP id="{5C9E16EC-B1B6-F0B3-E499-5114D9E89BFF}" name="Data">
       <FILE id="Dh8Lzk" name="ADSRData.cpp" compile="1" resource="0" file="Data/ADSRData.cpp"/>

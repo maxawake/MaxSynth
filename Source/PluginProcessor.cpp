@@ -172,9 +172,18 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             auto& decay = *apvts.getRawParameterValue("decay");
             auto& sustain = *apvts.getRawParameterValue("sustain");
             auto& release = *apvts.getRawParameterValue("release");
-            
+
+            auto& filterCutoff = *apvts.getRawParameterValue("filterCutoff");
+            auto& filterResonance = *apvts.getRawParameterValue("filterResonance");
+            auto& filterMode = *apvts.getRawParameterValue("filterMode");
+            auto& waveform = *apvts.getRawParameterValue("waveform");
+
+            // filterCutoff is already in Hz due to NormalisableRange with skew factor
+            // filterResonance is linear and doesn't need conversion
 
             voice->updateEnvelope(attack, decay, sustain, release);
+            voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
+            voice->updateWaveform(static_cast<int>(waveform));
         }
     }
 
@@ -224,6 +233,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.01f, 5.0f, 0.2f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.7f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.01f, 5.0f, 0.3f));
+
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 
+        juce::NormalisableRange<float>(20.0f, 20000.0f, 0.1f, 0.3f), 1000.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 10.0f, 0.0f));
+
+    // Filter mode parameter (0=LPF12, 1=LPF24, 2=HPF12, 3=HPF24, 4=BPF12, 5=BPF24)
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("filterMode", "Filter Mode", 
+        juce::StringArray{"LPF 12dB", "LPF 24dB", "HPF 12dB", "HPF 24dB", "BPF 12dB", "BPF 24dB"}, 1));
+
+    // Waveform parameter (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform", "Waveform", 
+        juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
 
     return { parameters.begin(), parameters.end() };
 }

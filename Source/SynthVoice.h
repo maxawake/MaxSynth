@@ -27,12 +27,18 @@ public:
     void controllerMoved (int controllerNumber, int newValue) override;
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
     void updateEnvelope(const float attack, const float decay, const float sustain, const float release);
+    void updateFilter(const float cutoff, const float resonance, const int mode);
+    void updateWaveform(const int waveformType);
 
 private:
     float freq = 440.0f; // Frequency of the note
     float volume = 1.0f; // Volume of the note
+    int currentWaveform = 0; // Current waveform type (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
     ADSRData adsr; // ADSR envelope
 
-    juce::dsp::Oscillator<float> oscillator { [](float x) { return x / juce::MathConstants<float>::pi; } }; // Oscillator for generating the sine wave
+    juce::dsp::Oscillator<float> oscillator { [](float x) { return std::sin(x); } }; // Oscillator - will be updated dynamically
     juce::dsp::Gain<float> gain; // Gain for volume control
+    juce::dsp::LadderFilter<float> filter; // Ladder filter for sound shaping
+    
+    juce::Random random; // For noise generation
 };

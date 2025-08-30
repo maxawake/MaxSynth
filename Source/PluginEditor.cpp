@@ -41,12 +41,12 @@ MaxSynthAudioProcessorEditor::~MaxSynthAudioProcessorEditor()
 //==============================================================================
 void MaxSynthAudioProcessorEditor::paint(juce::Graphics &g)
 {
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+    g.fillAll(juce::Colours::black);
     
     // Scale font size based on component size
     float fontSize = 15.0f * getScaleFactor();
     g.setFont(fontSize);
-    g.setColour(juce::Colours::white);
+    g.setColour(juce::Colours::black);
 }
 
 void MaxSynthAudioProcessorEditor::resized()

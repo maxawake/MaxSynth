@@ -30,7 +30,7 @@ OscillatorComponent::~OscillatorComponent()
 
 void OscillatorComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::darkgrey);
+    g.fillAll(juce::Colours::black);
 }
 
 void OscillatorComponent::resized()

@@ -36,7 +36,7 @@ ADSRComponent::~ADSRComponent()
 
 void ADSRComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::darkgrey);
+    g.fillAll(juce::Colours::black);
 }
 
 void ADSRComponent::resized()

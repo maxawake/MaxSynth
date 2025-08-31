@@ -34,6 +34,38 @@ FilterComponent::FilterComponent(juce::AudioProcessorValueTreeState& apvts)
     filterModeComboBox.addItem("BPF 24dB", 6);
     filterModeComboBox.setSelectedId(2); // Default to LPF 24dB
     addAndMakeVisible(filterModeComboBox);
+
+    // Set up filter ADSR sliders
+    filterAttackAttachment = std::make_unique<sliderAttachment>(apvts, "filterAttack", filterAttackSlider);
+    filterDecayAttachment = std::make_unique<sliderAttachment>(apvts, "filterDecay", filterDecaySlider);
+    filterSustainAttachment = std::make_unique<sliderAttachment>(apvts, "filterSustain", filterSustainSlider);
+    filterReleaseAttachment = std::make_unique<sliderAttachment>(apvts, "filterRelease", filterReleaseSlider);
+
+    setSmallStyle(filterAttackSlider);
+    filterAttackSlider.setTextValueSuffix(" s");
+    addAndMakeVisible(filterAttackSlider);
+
+    setSmallStyle(filterDecaySlider);
+    filterDecaySlider.setTextValueSuffix(" s");
+    addAndMakeVisible(filterDecaySlider);
+
+    setSmallStyle(filterSustainSlider);
+    addAndMakeVisible(filterSustainSlider);
+
+    setSmallStyle(filterReleaseSlider);
+    filterReleaseSlider.setTextValueSuffix(" s");
+    addAndMakeVisible(filterReleaseSlider);
+
+    // Set up LFO controls
+    lfoFreqAttachment = std::make_unique<sliderAttachment>(apvts, "lfoFreq", lfoFreqSlider);
+    lfoAmountAttachment = std::make_unique<sliderAttachment>(apvts, "lfoAmount", lfoAmountSlider);
+
+    setStyle(lfoFreqSlider);
+    lfoFreqSlider.setTextValueSuffix(" Hz");
+    addAndMakeVisible(lfoFreqSlider);
+
+    setStyle(lfoAmountSlider);
+    addAndMakeVisible(lfoAmountSlider);
 }
 
 void FilterComponent::paint(juce::Graphics& g)
@@ -48,22 +80,50 @@ void FilterComponent::resized()
     
     // Filter mode combo box at the top
     filterModeComboBox.setBounds(area.removeFromTop(30).reduced(padding));
+    area.removeFromTop(padding);
+    
+    // Main controls section (cutoff and resonance)
+    auto mainControlsHeight = 120;
+    auto mainControlsArea = area.removeFromTop(mainControlsHeight);
+    
+    // Split main controls horizontally
+    auto knobWidth = (mainControlsArea.getWidth() - 3 * padding) / 2;
+    
+    // Cutoff slider (left)
+    auto cutoffArea = mainControlsArea.removeFromLeft(knobWidth);
+    cutoffSlider.setBounds(cutoffArea.reduced(padding));
+    
+    // Add horizontal spacing
+    mainControlsArea.removeFromLeft(padding);
+    
+    // Resonance slider (right)
+    resonanceSlider.setBounds(mainControlsArea.reduced(padding));
     
     // Add vertical spacing
     area.removeFromTop(padding);
     
-    // Split remaining area horizontally for the two knobs
-    auto knobWidth = (area.getWidth() - 3 * padding) / 2; // 2 knobs + spacing
+    // ADSR section
+    auto adsrHeight = 80;
+    auto adsrArea = area.removeFromTop(adsrHeight);
+    auto adsrSliderWidth = (adsrArea.getWidth() - 5 * padding) / 4; // 4 sliders
     
-    // Cutoff slider (left)
-    auto cutoffArea = area.removeFromLeft(knobWidth);
-    cutoffSlider.setBounds(cutoffArea.reduced(padding));
+    filterAttackSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
+    adsrArea.removeFromLeft(padding);
+    filterDecaySlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
+    adsrArea.removeFromLeft(padding);
+    filterSustainSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
+    adsrArea.removeFromLeft(padding);
+    filterReleaseSlider.setBounds(adsrArea.reduced(padding));
     
-    // Add horizontal spacing
+    // Add vertical spacing
+    area.removeFromTop(padding);
+    
+    // LFO section (remaining space)
+    auto lfoSliderWidth = (area.getWidth() - 3 * padding) / 2;
+    
+    lfoFreqSlider.setBounds(area.removeFromLeft(lfoSliderWidth).reduced(padding));
     area.removeFromLeft(padding);
-    
-    // Resonance slider (right)
-    resonanceSlider.setBounds(area.reduced(padding));
+    lfoAmountSlider.setBounds(area.reduced(padding));
 }
 
 FilterComponent::~FilterComponent()
@@ -74,8 +134,15 @@ void FilterComponent::setStyle(juce::Slider& slider)
 {
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    slider.setColour(juce::Slider::thumbColourId, juce::Colours::red);
-    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
-    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
+    // slider.setColour(juce::Slider::thumbColourId, juce::Colours::red);
+    // slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
+    // slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
     // Add any other styling you want
+}
+
+void FilterComponent::setSmallStyle(juce::Slider& slider)
+{
+    slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 15);
+    // Smaller rotary sliders for ADSR
 }

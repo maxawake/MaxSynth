@@ -28,6 +28,7 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
 {
     // Prepare the voice for playback
     adsr.setSampleRate(sampleRate);
+    filterADSR.setSampleRate(sampleRate);
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -37,13 +38,17 @@ void SynthVoice::prepareToPlay (double sampleRate, int samplesPerBlock, int numC
     // Prepare the DSP components
     oscillator.prepare(spec);
     oscillator.setFrequency(freq);
+    
+    lfoOscillator.prepare(spec);
+    lfoOscillator.setFrequency(lfoFrequency);
+    
     gain.prepare(spec);
     gain.setGainLinear(volume); // Set a safe default volume
 
     filter.prepare(spec);
     filter.setMode(juce::dsp::LadderFilterMode::LPF24); // Set filter mode
-    filter.setCutoffFrequencyHz(20000.0f); // Set a high default cutoff
-    filter.setResonance(0.1f); // Set a low default resonance
+    filter.setCutoffFrequencyHz(baseCutoff); // Set a high default cutoff
+    filter.setResonance(baseResonance); // Set a low default resonance
     filter.setEnabled(true); // Enable the filter
 }
 
@@ -64,12 +69,14 @@ void SynthVoice::startNote (int midiNoteNumber, float velocity, juce::Synthesise
     gain.setGainLinear(velocity * 0.3f); // Scale down to prevent clipping
     
     adsr.noteOn();
+    filterADSR.noteOn(); // Start filter envelope
 }
 
 void SynthVoice::stopNote (float velocity, bool allowTailOff)
 {
     // Stop the note with the given velocity
     adsr.noteOff();
+    filterADSR.noteOff(); // Stop filter envelope
     
     // // If not allowing tail off, clear the voice immediately
     // if (!allowTailOff)
@@ -106,7 +113,56 @@ void SynthVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int st
     // Apply gain
     gain.process(context);
     
-    // Apply filter
+    // Calculate filter modulation for the entire block
+    
+    // Create a buffer for LFO processing
+    juce::AudioBuffer<float> lfoBuffer(1, numSamples);
+    lfoBuffer.clear();
+    juce::dsp::AudioBlock<float> lfoBlock(lfoBuffer);
+    juce::dsp::ProcessContextReplacing<float> lfoContext(lfoBlock);
+    
+    // Generate LFO samples for the entire block
+    lfoOscillator.process(lfoContext);
+    auto* lfoData = lfoBuffer.getReadPointer(0);
+    
+    // Calculate envelope and modulation values for the entire block
+    juce::AudioBuffer<float> modulationBuffer(1, numSamples);
+    auto* modData = modulationBuffer.getWritePointer(0);
+    
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        // Get filter envelope value
+        float filterEnvValue = filterADSR.getNextSample();
+        
+        // Get LFO value
+        float lfoValue = lfoData[sample];
+        
+        // Calculate modulated cutoff frequency
+        float modulatedCutoff = baseCutoff;
+        
+        // Apply filter envelope (envelope controls how much the cutoff moves from base frequency)
+        modulatedCutoff *= (1.0f + filterEnvValue * 4.0f); // Envelope can increase cutoff up to 5x base
+        
+        // Apply LFO modulation
+        modulatedCutoff *= (1.0f + lfoValue * lfoAmount * 2.0f); // LFO can modulate ±2x
+        
+        // Clamp to reasonable range and store
+        modData[sample] = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
+    }
+    
+    // For now, we'll use the average modulation value for the entire block
+    // This is more efficient than per-sample updates
+    float avgCutoff = 0.0f;
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        avgCutoff += modData[sample];
+    }
+    avgCutoff /= numSamples;
+    
+    // Set filter cutoff once for the entire block
+    filter.setCutoffFrequencyHz(avgCutoff);
+    
+    // Apply filter to the entire block at once
     filter.process(context);
 
     // Apply ADSR envelope
@@ -130,8 +186,11 @@ void SynthVoice::updateEnvelope(const float attack, const float decay, const flo
 
 void SynthVoice::updateFilter(const float cutoff, const float resonance, const int mode)
 {
-    filter.setCutoffFrequencyHz(cutoff);
-    filter.setResonance(resonance);
+    baseCutoff = cutoff;
+    baseResonance = resonance;
+    filterMode = mode;
+    
+    filter.setResonance(baseResonance);
     
     // Map the mode parameter to LadderFilterMode
     switch (mode)
@@ -144,6 +203,18 @@ void SynthVoice::updateFilter(const float cutoff, const float resonance, const i
         case 5: filter.setMode(juce::dsp::LadderFilterMode::BPF24); break;
         default: filter.setMode(juce::dsp::LadderFilterMode::LPF24); break;
     }
+}
+
+void SynthVoice::updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release)
+{
+    filterADSR.updateEnvelope(attack, decay, sustain, release);
+}
+
+void SynthVoice::updateLFO(const float frequency, const float amount)
+{
+    lfoFrequency = frequency;
+    lfoAmount = amount;
+    lfoOscillator.setFrequency(frequency);
 }
 
 void SynthVoice::updateWaveform(const int waveformType)

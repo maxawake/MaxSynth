@@ -178,11 +178,21 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             auto& filterMode = *apvts.getRawParameterValue("filterMode");
             auto& waveform = *apvts.getRawParameterValue("waveform");
 
+            // Get filter envelope and LFO parameters
+            auto& filterAttack = *apvts.getRawParameterValue("filterAttack");
+            auto& filterDecay = *apvts.getRawParameterValue("filterDecay");
+            auto& filterSustain = *apvts.getRawParameterValue("filterSustain");
+            auto& filterRelease = *apvts.getRawParameterValue("filterRelease");
+            auto& lfoFreq = *apvts.getRawParameterValue("lfoFreq");
+            auto& lfoAmount = *apvts.getRawParameterValue("lfoAmount");
+
             // filterCutoff is already in Hz due to NormalisableRange with skew factor
             // filterResonance is linear and doesn't need conversion
 
             voice->updateEnvelope(attack, decay, sustain, release);
             voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
+            voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease);
+            voice->updateLFO(lfoFreq, lfoAmount);
             voice->updateWaveform(static_cast<int>(waveform));
         }
     }
@@ -245,6 +255,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
     // Waveform parameter (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
     parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform", "Waveform", 
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
+
+    // Filter ADSR parameters
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterAttack", "Filter Attack", 0.01f, 5.0f, 0.1f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterDecay", "Filter Decay", 0.01f, 5.0f, 0.2f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterSustain", "Filter Sustain", 0.0f, 1.0f, 0.7f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterRelease", "Filter Release", 0.01f, 5.0f, 0.3f));
+
+    // LFO parameters
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoFreq", "LFO Frequency", 0.1f, 20.0f, 2.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoAmount", "LFO Amount", 0.0f, 1.0f, 0.0f));
 
     return { parameters.begin(), parameters.end() };
 }

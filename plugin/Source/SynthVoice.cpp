@@ -147,13 +147,6 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
         // Apply LFO modulation
         modulatedCutoff *= (1.0f + avgLfoValue * lfoAmount * 4.0f); // Increased LFO amount for more audible effect
 
-        // Debug: Print LFO values occasionally (remove this in production)
-        static int debugCounter = 0;
-        if (++debugCounter % 1000 == 0 && lfoAmount > 0.0f)
-        {
-            DBG("LFO Value: " << avgLfoValue << ", LFO Amount: " << lfoAmount << ", Modulated Cutoff: " << modulatedCutoff);
-        }
-
         // Clamp to reasonable range
         modulatedCutoff = juce::jlimit(50.0f, 18000.0f, modulatedCutoff);
 

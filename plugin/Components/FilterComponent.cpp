@@ -134,15 +134,10 @@ void FilterComponent::setStyle(juce::Slider& slider)
 {
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    // slider.setColour(juce::Slider::thumbColourId, juce::Colours::red);
-    // slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::blue);
-    // slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
-    // Add any other styling you want
 }
 
 void FilterComponent::setSmallStyle(juce::Slider& slider)
 {
-    slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 15);
-    // Smaller rotary sliders for ADSR
 }

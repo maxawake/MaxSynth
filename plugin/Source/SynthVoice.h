@@ -44,7 +44,7 @@ private:
     
     // LFO parameters
     float lfoFrequency = 2.0f;
-    float lfoAmount = 0.0f;
+    float lfoAmount = 0.2f; // Set a default amount that's actually audible
     
     ADSRData adsr; // ADSR envelope
     ADSRData filterADSR; // Filter envelope

@@ -43,3 +43,6 @@
 Builds/LinuxMakefile/build
 Builds/LinuxMakefile/make_helpers
 Builds/LinuxMakefile/pre_build
+
+build
+JUCE

@@ -14,6 +14,7 @@
 #include "../Components/ADSRComponent.h"
 #include "../Components/FilterComponent.h"
 #include "../Components/OscillatorComponent.h"
+#include "../Components/ScopeComponent.h"
 
 class MaxSynthAudioProcessorEditor : public juce::AudioProcessorEditor,
                                      private juce::MidiInputCallback,
@@ -69,7 +70,7 @@ private:
     juce::AudioDeviceManager deviceManager; 
     juce::MidiKeyboardState keyboardState;
     juce::MidiKeyboardComponent keyboardComponent;
-
+    ScopeComponent<float> scopeComponent;
 
     juce::ComboBox waveformSelector;
 

@@ -29,6 +29,7 @@ public:
     void updateEnvelope(const float attack, const float decay, const float sustain, const float release);
     void updateFilter(const float cutoff, const float resonance, const int mode);
     void updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release);
+    void updateFilterADSREnabled(const bool enabled);
     void updateLFO(const float frequency, const float amount);
     void updateWaveform(const int waveformType);
 
@@ -45,6 +46,9 @@ private:
     // LFO parameters
     float lfoFrequency = 2.0f;
     float lfoAmount = 0.2f; // Set a default amount that's actually audible
+    
+    // Filter ADSR state
+    bool filterADSREnabled = true; // Default to enabled
     
     ADSRData adsr; // ADSR envelope
     ADSRData filterADSR; // Filter envelope

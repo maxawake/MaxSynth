@@ -16,11 +16,12 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
       adsrComponent(audioProcessor.getAPVTS()),   // Initialize adsrComponent first
       filterComponent(audioProcessor.getAPVTS()), // Initialize filterComponent second
       oscillatorComponent(audioProcessor.getAPVTS()),
-      keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
+      keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
+      scopeComponent(audioProcessor.getAudioBufferQueue())
 {
-    setSize(800, 400);
+    setSize(900, 700); // Increased height for three-row layout
     setResizable(true, true);
-    setResizeLimits(400, 300, 2000, 1500);
+    setResizeLimits(600, 400, 2000, 1500); // Increased minimum size
 
     setMidiInput(1);
 
@@ -30,6 +31,9 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
     addAndMakeVisible(adsrComponent);
     addAndMakeVisible(filterComponent);
     addAndMakeVisible(oscillatorComponent);
+
+    addAndMakeVisible (scopeComponent);
+
 }
 
 MaxSynthAudioProcessorEditor::~MaxSynthAudioProcessorEditor()
@@ -53,35 +57,47 @@ void MaxSynthAudioProcessorEditor::resized()
     auto editorArea = getLocalBounds();
     auto padding = 10;
 
-    // Reserve space for keyboard at the bottom
+    // Define row heights
     auto keyboardHeight = 80;
-    auto keyboardArea = editorArea.removeFromBottom(keyboardHeight);
-    keyboardComponent.setBounds(keyboardArea.reduced(padding));
+    auto scopeHeight = 120;
+    auto controlsHeight = editorArea.getHeight() - keyboardHeight - scopeHeight - (padding * 4); // Remaining space for controls
 
-    // Add vertical spacing between keyboard and other components
-    editorArea.removeFromBottom(padding);
+    // Row 1: Controls at the top
+    auto controlsArea = editorArea.removeFromTop(controlsHeight);
+    editorArea.removeFromTop(padding); // Add spacing
 
-    // Create horizontal layout for the main components
+    // Create horizontal layout for the control components
     int numComponents = 3;
-    auto componentHeight = editorArea.getHeight();
-    auto componentWidth = (editorArea.getWidth() - (numComponents + 1) * padding) / numComponents; // 3 components + margins
+    auto componentWidth = (controlsArea.getWidth() - (numComponents + 1) * padding) / numComponents;
 
     // Add horizontal spacing
-    editorArea.removeFromLeft(padding);
-
-    // Oscillator Component (middle)
-    auto oscillatorArea = editorArea.removeFromLeft(componentWidth);
-    oscillatorComponent.setBounds(oscillatorArea.reduced(padding));
+    controlsArea.removeFromLeft(padding);
 
     // ADSR Component (left)
-    auto adsrArea = editorArea.removeFromLeft(componentWidth);
+    auto adsrArea = controlsArea.removeFromLeft(componentWidth);
     adsrComponent.setBounds(adsrArea.reduced(padding));
 
     // Add horizontal spacing
-    editorArea.removeFromLeft(padding);
+    controlsArea.removeFromLeft(padding);
+
+    // Oscillator Component (middle)
+    auto oscillatorArea = controlsArea.removeFromLeft(componentWidth);
+    oscillatorComponent.setBounds(oscillatorArea.reduced(padding));
+
+    // Add horizontal spacing
+    controlsArea.removeFromLeft(padding);
 
     // Filter Component (right - takes remaining space)
-    filterComponent.setBounds(editorArea.reduced(padding));
+    filterComponent.setBounds(controlsArea.reduced(padding));
+
+    // Row 2: Scope in the middle
+    auto scopeArea = editorArea.removeFromTop(scopeHeight);
+    scopeComponent.setBounds(scopeArea.reduced(padding));
+    editorArea.removeFromTop(padding); // Add spacing
+
+    // Row 3: Keyboard at the bottom
+    auto keyboardArea = editorArea.removeFromTop(keyboardHeight);
+    keyboardComponent.setBounds(keyboardArea.reduced(padding));
 }
 
 void MaxSynthAudioProcessorEditor::handleNoteOn(juce::MidiKeyboardState *, int midiChannel, int midiNoteNumber, float velocity)

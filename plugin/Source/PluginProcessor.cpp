@@ -179,6 +179,7 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             auto& waveform = *apvts.getRawParameterValue("waveform");
 
             // Get filter envelope and LFO parameters
+            auto& filterADSREnabled = *apvts.getRawParameterValue("filterADSREnabled");
             auto& filterAttack = *apvts.getRawParameterValue("filterAttack");
             auto& filterDecay = *apvts.getRawParameterValue("filterDecay");
             auto& filterSustain = *apvts.getRawParameterValue("filterSustain");
@@ -189,12 +190,19 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             voice->updateEnvelope(attack, decay, sustain, release);
             voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
             voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease);
+            voice->updateFilterADSREnabled(filterADSREnabled > 0.5f); // Convert float to bool
             voice->updateLFO(lfoFreq, lfoAmount);
             voice->updateWaveform(static_cast<int>(waveform));
         }
     }
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+    
+    // Collect scope data from the left channel (or mix down to mono)
+    if (buffer.getNumChannels() > 0)
+    {
+        scopeDataCollector.process(buffer.getReadPointer(0), static_cast<size_t>(buffer.getNumSamples()));
+    }
 }
 
 //==============================================================================
@@ -254,6 +262,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
 
     // Filter ADSR parameters
+    parameters.push_back(std::make_unique<juce::AudioParameterBool>("filterADSREnabled", "Filter ADSR Enabled", true));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterAttack", "Filter Attack", 0.001f, 1.0f, 0.1f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterDecay", "Filter Decay", 0.001f, 1.0f, 0.2f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterSustain", "Filter Sustain", 0.0f, 1.0f, 0.7f));

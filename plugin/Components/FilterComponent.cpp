@@ -35,6 +35,15 @@ FilterComponent::FilterComponent(juce::AudioProcessorValueTreeState& apvts)
     filterModeComboBox.setSelectedId(2); // Default to LPF 24dB
     addAndMakeVisible(filterModeComboBox);
 
+    // Set up ADSR button
+    adsrToggleButton.setButtonText("ADSR");
+    adsrToggleButton.setClickingTogglesState(true); // Make it a toggle button
+    adsrToggleButton.setColour(juce::TextButton::buttonOnColourId, juce::Colours::green);
+    adsrToggleButton.setColour(juce::TextButton::textColourOnId, juce::Colours::black);
+    adsrToggleButton.setColour(juce::TextButton::buttonColourId, juce::Colours::darkgrey);
+    adsrToggleAttachment = std::make_unique<buttonAttachment>(apvts, "filterADSREnabled", adsrToggleButton);
+    addAndMakeVisible(adsrToggleButton);
+
     // Set up filter ADSR sliders
     filterAttackAttachment = std::make_unique<sliderAttachment>(apvts, "filterAttack", filterAttackSlider);
     filterDecayAttachment = std::make_unique<sliderAttachment>(apvts, "filterDecay", filterDecaySlider);
@@ -88,9 +97,13 @@ void FilterComponent::resized()
     
     // Split main controls horizontally
     auto knobWidth = (mainControlsArea.getWidth() - 3 * padding) / 2;
+
+
     
     // Cutoff slider (left)
     auto cutoffArea = mainControlsArea.removeFromLeft(knobWidth);
+
+    adsrToggleButton.setBounds(cutoffArea.removeFromTop(30).reduced(padding));
     cutoffSlider.setBounds(cutoffArea.reduced(padding));
     
     // Add horizontal spacing

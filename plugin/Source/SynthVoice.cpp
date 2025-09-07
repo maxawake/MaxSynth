@@ -128,8 +128,8 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     {
         int samplesToProcess = juce::jmin(chunkSize, numSamples - startPos);
         
-        // Get filter envelope value for this chunk
-        float filterEnvValue = filterADSR.getNextSample();
+        // Get filter envelope value for this chunk (if enabled)
+        float filterEnvValue = filterADSREnabled ? filterADSR.getNextSample() : 1.0f;
         
         // Get average LFO value for this chunk
         float avgLfoValue = 0.0f;
@@ -140,15 +140,18 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
         avgLfoValue /= samplesToProcess;
 
         float filterEnvPercentage = 0.3f; // More conservative modulation amount
+        std::cout << filterADSREnabled << std::endl;
         
-        // Calculate modulated cutoff frequency
-        float modulatedCutoff = baseCutoff + filterEnvValue * filterEnvPercentage * (20000.0f - baseCutoff);
+        // Calculate modulated cutoff frequency (only apply envelope if enabled)
+        float modulatedCutoff = filterADSREnabled ? 
+            baseCutoff + filterEnvValue * filterEnvPercentage * (20000.0f - baseCutoff) :
+            baseCutoff;
 
         // Apply LFO modulation
         modulatedCutoff *= (1.0f + avgLfoValue * lfoAmount * 4.0f); // Increased LFO amount for more audible effect
 
         // Clamp to reasonable range
-        modulatedCutoff = juce::jlimit(50.0f, 18000.0f, modulatedCutoff);
+        modulatedCutoff = juce::jlimit(20.0f, 20000.0f, modulatedCutoff);
 
         // Set filter cutoff for this chunk
         filter.setCutoffFrequencyHz(modulatedCutoff);
@@ -216,6 +219,11 @@ void SynthVoice::updateFilter(const float cutoff, const float resonance, const i
 void SynthVoice::updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release)
 {
     filterADSR.updateEnvelope(attack, decay, sustain, release);
+}
+
+void SynthVoice::updateFilterADSREnabled(const bool enabled)
+{
+    filterADSREnabled = enabled;
 }
 
 void SynthVoice::updateLFO(const float frequency, const float amount)

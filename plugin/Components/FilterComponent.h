@@ -33,6 +33,7 @@ private:
     
     using sliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     using comboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+    using buttonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
     
     std::unique_ptr<sliderAttachment> cutoffAttachment;
     std::unique_ptr<sliderAttachment> resonanceAttachment;
@@ -47,6 +48,13 @@ private:
     // LFO attachments
     std::unique_ptr<sliderAttachment> lfoFreqAttachment;
     std::unique_ptr<sliderAttachment> lfoAmountAttachment;
+    
+    // Button attachments
+    std::unique_ptr<buttonAttachment> adsrToggleAttachment;
+
+    juce::TextButton adsrToggleButton;
+    juce::TextButton lfoToggleButton;
+
 
     void setStyle(juce::Slider& slider);
     void setSmallStyle(juce::Slider& slider);

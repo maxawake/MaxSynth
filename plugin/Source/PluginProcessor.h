@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "../Components/ScopeComponent.h"
 
 //==============================================================================
 /**
@@ -55,6 +56,9 @@ public:
     juce::MidiMessageCollector& getMidiMessageCollector() { return midiCollector; }
 
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
+    
+    // Scope data access
+    AudioBufferQueue<float>& getAudioBufferQueue() noexcept { return audioBufferQueue; }
 
 private:
     juce::Synthesiser synth; 
@@ -62,6 +66,10 @@ private:
 
     juce::MidiMessageCollector midiCollector;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    
+    // Scope data collection
+    AudioBufferQueue<float> audioBufferQueue;
+    ScopeDataCollector<float> scopeDataCollector { audioBufferQueue };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MaxSynthAudioProcessor)

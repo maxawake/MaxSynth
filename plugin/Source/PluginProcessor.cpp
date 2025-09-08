@@ -173,6 +173,8 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
     // Oscillator parameters
     auto& waveform = *apvts.getRawParameterValue("waveform");
+    auto& waveform2 = *apvts.getRawParameterValue("waveform2");
+    auto& waveform3 = *apvts.getRawParameterValue("waveform3");
 
     // ADSR parameters
     auto& attack = *apvts.getRawParameterValue("attack");
@@ -219,8 +221,11 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             voice->updateEnvelope(attack, decay, sustain, release);
             voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
             voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease, filterADSREnabled > 0.5f, adsrFilterAmount);
-            voice->setGlobalLFOData(globalLFOBuffer.data()); // Pass global LFO data
-            voice->updateWaveform(static_cast<int>(waveform));
+            voice->setGlobalLFOData(globalLFOBuffer.data(), lfoAmount); // Pass global LFO data
+            
+            voice->updateWaveform(static_cast<int>(waveform), 1); // Update primary oscillator
+            voice->updateWaveform(static_cast<int>(waveform2), 2); // Update secondary oscillator
+            voice->updateWaveform(static_cast<int>(waveform3), 3); // Update tertiary oscillator
         }
     }
 
@@ -287,6 +292,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
 
     // Waveform parameter (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
     parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform", "Waveform", 
+        juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform2", "Waveform 2", 
+        juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform3", "Waveform 3", 
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
 
     // Filter ADSR parameters

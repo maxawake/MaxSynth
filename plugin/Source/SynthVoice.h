@@ -30,9 +30,8 @@ public:
     void updateFilter(const float cutoff, const float resonance, const int mode);
     void updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release, const bool enabled, const float amount);
     void updateFilterADSREnabled(const bool enabled);
-    void updateLFO(const float frequency, const float amount);
-    void setGlobalLFOData(const float* lfoData);
-    void updateWaveform(const int waveformType);
+    void setGlobalLFOData(const float* lfoData, const float amount);
+    void updateWaveform(const int waveformType, const int oscIndex);
 
 private:
     float freq = 440.0f; // Frequency of the note
@@ -56,8 +55,10 @@ private:
     ADSRData adsr; // ADSR envelope
     ADSRData filterADSR; // Filter envelope
 
-    juce::dsp::Oscillator<float> oscillator { [](float x) { return std::sin(x); } }; // Oscillator - will be updated dynamically
-    // juce::dsp::Oscillator<float> lfoOscillator { [](float x) { return std::sin(x); } }; // LFO oscillator
+    juce::dsp::Oscillator<float> oscillator1 { [](float x) { return std::sin(x); } }; // Oscillator - will be updated dynamically
+    juce::dsp::Oscillator<float> oscillator2 { [](float x) { return std::sin(x); } }; // LFO oscillator
+    juce::dsp::Oscillator<float> oscillator3 { [](float x) { return std::sin(x); } }; // LFO oscillator
+
     juce::dsp::Gain<float> gain; // Gain for volume control
     juce::dsp::LadderFilter<float> filter; // Ladder filter for sound shaping
     

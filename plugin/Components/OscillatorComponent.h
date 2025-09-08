@@ -20,11 +20,19 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+    void setLabels(juce::ComboBox& box);
 private:
-    juce::ComboBox waveformSelector;
     
     using comboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+
+    juce::ComboBox waveformSelector;
     std::unique_ptr<comboBoxAttachment> waveformAttachment;
+
+    juce::ComboBox waveformSelector2;
+    std::unique_ptr<comboBoxAttachment> waveformAttachment2;
+
+    juce::ComboBox waveformSelector3;
+    std::unique_ptr<comboBoxAttachment> waveformAttachment3;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscillatorComponent)
 };

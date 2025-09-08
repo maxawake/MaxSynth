@@ -16,7 +16,7 @@ SynthVoice::SynthVoice()
     gain.setGainLinear(volume);
 
     // Initialize with sine wave
-    updateWaveform(0);
+    updateWaveform(0, 1);
 }
 
 SynthVoice::~SynthVoice()
@@ -26,30 +26,30 @@ SynthVoice::~SynthVoice()
 
 void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels)
 {
-    // Prepare the voice for playback
-    adsr.setSampleRate(sampleRate);
-    filterADSR.setSampleRate(sampleRate);
-
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
     spec.numChannels = numChannels;
 
     // Prepare the DSP components
-    oscillator.prepare(spec);
-    oscillator.setFrequency(freq);
-
-    // lfoOscillator.prepare(spec); // Use the same sample rate as the main oscillator
-    // lfoOscillator.setFrequency(lfoFrequency);
+    oscillator1.prepare(spec);
+    oscillator1.setFrequency(freq);
+    oscillator2.prepare(spec);
+    oscillator2.setFrequency(freq);
+    oscillator3.prepare(spec);
+    oscillator3.setFrequency(freq);
 
     gain.prepare(spec);
-    gain.setGainLinear(volume); // Set a safe default volume
+    gain.setGainLinear(volume);
+
+    adsr.setSampleRate(sampleRate);
+    filterADSR.setSampleRate(sampleRate);
 
     filter.prepare(spec);
-    filter.setMode(juce::dsp::LadderFilterMode::LPF12); // Set filter mode
-    filter.setCutoffFrequencyHz(baseCutoff);            // Set a high default cutoff
-    filter.setResonance(baseResonance);                 // Set a low default resonance
-    filter.setEnabled(true);                            // Enable the filter
+    filter.setMode(juce::dsp::LadderFilterMode::LPF12);
+    filter.setCutoffFrequencyHz(baseCutoff);
+    filter.setResonance(baseResonance);
+    filter.setEnabled(true);
 }
 
 bool SynthVoice::canPlaySound(juce::SynthesiserSound *sound)
@@ -61,7 +61,9 @@ void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::Synthesiser
 {
     // Start the note with the given MIDI note number and velocity
     freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    oscillator.setFrequency(freq);
+    oscillator1.setFrequency(freq);
+    oscillator2.setFrequency(freq);
+    oscillator3.setFrequency(freq);
 
     // Set gain based on velocity to prevent clipping
     gain.setGainLinear(velocity * 0.3f);
@@ -74,11 +76,7 @@ void SynthVoice::stopNote(float velocity, bool allowTailOff)
 {
     // Stop the note with the given velocity
     adsr.noteOff();
-    filterADSR.noteOff(); // Stop filter envelope
-
-    // // If not allowing tail off, clear the voice immediately
-    // if (!allowTailOff)
-    //     clearCurrentNote();
+    filterADSR.noteOff();
 }
 
 void SynthVoice::pitchWheelMoved(int newValue)
@@ -106,26 +104,15 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     juce::dsp::ProcessContextReplacing<float> synthContext(synthBlock);
 
     // Generate oscillator output
-    oscillator.process(synthContext);
+    oscillator1.process(synthContext);
+    oscillator2.process(synthContext);
+    oscillator3.process(synthContext);
 
     // Apply gain
     gain.process(synthContext);
 
-    // Create a buffer for LFO processing
     // Use global LFO data if available, otherwise fall back to local generation
     const float* lfoData = globalLFOData;
-    std::unique_ptr<juce::AudioBuffer<float>> localLfoBuffer;
-    
-    // if (lfoData == nullptr)
-    // {
-    //     // Fallback: generate local LFO if global data isn't available
-    //     localLfoBuffer = std::make_unique<juce::AudioBuffer<float>>(1, numSamples);
-    //     localLfoBuffer->clear();
-    //     juce::dsp::AudioBlock<float> lfoBlock(*localLfoBuffer);
-    //     juce::dsp::ProcessContextReplacing<float> lfoContext(lfoBlock);
-    //     lfoOscillator.process(lfoContext);
-    //     lfoData = localLfoBuffer->getReadPointer(0);
-    // }
 
     // Process filter in small chunks to balance performance and modulation smoothness
     const int chunkSize = 32; // Process 32 samples at a time
@@ -240,53 +227,48 @@ void SynthVoice::updateFilterEnvelope(const float attack, const float decay, con
     adsrFilterAmount = amount;
 }
 
-void SynthVoice::updateLFO(const float frequency, const float amount)
-{
-    lfoFrequency = frequency;
-    lfoAmount = amount;
-    // lfoOscillator.setFrequency(frequency);
-}
-
-void SynthVoice::setGlobalLFOData(const float* lfoData)
+void SynthVoice::setGlobalLFOData(const float* lfoData, const float amount)
 {
     globalLFOData = lfoData;
+    lfoAmount = amount;
 }
 
-void SynthVoice::updateWaveform(const int waveformType)
+void SynthVoice::updateWaveform(const int waveformType, const int oscIndex)
 {
     currentWaveform = waveformType;
+    auto osc = (oscIndex == 1) ? &oscillator1 : (oscIndex == 2) ? &oscillator2 : &oscillator3;
 
     switch (waveformType)
     {
     case 0: // Sine
-        oscillator.initialise([](float x)
+        osc->initialise([](float x)
                               { return std::sin(x); });
         break;
 
     case 1: // Square
-        oscillator.initialise([](float x)
+        osc->initialise([](float x)
                               { return x < 0.0f ? -1.0f : 1.0f; });
         break;
 
     case 2: // Sawtooth
-        oscillator.initialise([](float x)
+        osc->initialise([](float x)
                               { return x / juce::MathConstants<float>::pi; });
         break;
 
     case 3: // Triangle
-        oscillator.initialise([](float x)
+        osc->initialise([](float x)
                               { return 2.0f * std::abs(2.0f * (x / juce::MathConstants<float>::twoPi - std::floor(x / juce::MathConstants<float>::twoPi + 0.5f))) - 1.0f; });
         break;
 
     case 4: // Noise
-        oscillator.initialise([this](float x)
+        osc->initialise([this](float x)
                               { 
                 juce::ignoreUnused(x);
                 return random.nextFloat() * 2.0f - 1.0f; });
         break;
 
     default: // Default to sine
-        oscillator.initialise([](float x)
+        osc->initialise([](float x)
                               { return std::sin(x); });
         break;
     }

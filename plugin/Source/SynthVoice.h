@@ -28,7 +28,7 @@ public:
     void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
     void updateEnvelope(const float attack, const float decay, const float sustain, const float release);
     void updateFilter(const float cutoff, const float resonance, const int mode);
-    void updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release);
+    void updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release, const bool enabled, const float amount);
     void updateFilterADSREnabled(const bool enabled);
     void updateLFO(const float frequency, const float amount);
     void updateWaveform(const int waveformType);
@@ -49,6 +49,7 @@ private:
     
     // Filter ADSR state
     bool filterADSREnabled = true; // Default to enabled
+    float adsrFilterAmount = 0.5f; // Default modulation amount
     
     ADSRData adsr; // ADSR envelope
     ADSRData filterADSR; // Filter envelope

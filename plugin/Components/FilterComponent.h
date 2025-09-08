@@ -28,9 +28,6 @@ private:
     // ADSR sliders for filter envelope
     juce::Slider filterAttackSlider, filterDecaySlider, filterSustainSlider, filterReleaseSlider;
     
-    // LFO controls
-    juce::Slider lfoFreqSlider, lfoAmountSlider;
-    
     using sliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     using comboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
     using buttonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
@@ -45,16 +42,14 @@ private:
     std::unique_ptr<sliderAttachment> filterSustainAttachment;
     std::unique_ptr<sliderAttachment> filterReleaseAttachment;
     
-    // LFO attachments
-    std::unique_ptr<sliderAttachment> lfoFreqAttachment;
-    std::unique_ptr<sliderAttachment> lfoAmountAttachment;
-    
     // Button attachments
     std::unique_ptr<buttonAttachment> adsrToggleAttachment;
 
     juce::TextButton adsrToggleButton;
     juce::TextButton lfoToggleButton;
 
+    std::unique_ptr<sliderAttachment> adsrFilterAmountAttachment;
+    juce::Slider adsrFilterAmountSlider;
 
     void setStyle(juce::Slider& slider);
     void setSmallStyle(juce::Slider& slider);

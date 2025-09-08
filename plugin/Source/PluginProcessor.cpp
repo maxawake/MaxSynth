@@ -186,11 +186,11 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             auto& filterRelease = *apvts.getRawParameterValue("filterRelease");
             auto& lfoFreq = *apvts.getRawParameterValue("lfoFreq");
             auto& lfoAmount = *apvts.getRawParameterValue("lfoAmount");
+            auto& adsrFilterAmount = *apvts.getRawParameterValue("adsrFilterAmount");
 
             voice->updateEnvelope(attack, decay, sustain, release);
             voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
-            voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease);
-            voice->updateFilterADSREnabled(filterADSREnabled > 0.5f); // Convert float to bool
+            voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease, filterADSREnabled > 0.5f, adsrFilterAmount);
             voice->updateLFO(lfoFreq, lfoAmount);
             voice->updateWaveform(static_cast<int>(waveform));
         }
@@ -271,6 +271,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
     // LFO parameters
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoFreq", "LFO Frequency", 0.1f, 30.0f, 2.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoAmount", "LFO Amount", 0.0f, 1.0f, 0.3f)); // Default to 0.3 for audible effect
+
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("masterGain", "Master Gain", 0.0f, 1.0f, 0.8f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("adsrFilterAmount", "ADSR Filter Amount", 0.0f, 1.0f, 0.8f));
 
     return { parameters.begin(), parameters.end() };
 }

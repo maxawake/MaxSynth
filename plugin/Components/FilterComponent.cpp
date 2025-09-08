@@ -16,6 +16,7 @@ FilterComponent::FilterComponent(juce::AudioProcessorValueTreeState& apvts)
     cutoffAttachment = std::make_unique<sliderAttachment>(apvts, "filterCutoff", cutoffSlider);
     resonanceAttachment = std::make_unique<sliderAttachment>(apvts, "filterResonance", resonanceSlider);
     filterModeAttachment = std::make_unique<comboBoxAttachment>(apvts, "filterMode", filterModeComboBox);
+    adsrFilterAmountAttachment = std::make_unique<sliderAttachment>(apvts, "adsrFilterAmount", adsrFilterAmountSlider);
 
     setStyle(cutoffSlider);
     cutoffSlider.setTextValueSuffix(" Hz");
@@ -24,6 +25,10 @@ FilterComponent::FilterComponent(juce::AudioProcessorValueTreeState& apvts)
     setStyle(resonanceSlider);
     resonanceSlider.setTextValueSuffix(" dB");
     addAndMakeVisible(resonanceSlider);
+
+    setStyle(adsrFilterAmountSlider);
+    adsrFilterAmountSlider.setTextValueSuffix(" %");
+    addAndMakeVisible(adsrFilterAmountSlider);
 
     // Set up filter mode combo box
     filterModeComboBox.addItem("LPF 12dB", 1);
@@ -97,8 +102,6 @@ void FilterComponent::resized()
     
     // Split main controls horizontally
     auto knobWidth = (mainControlsArea.getWidth() - 3 * padding) / 2;
-
-
     
     // Cutoff slider (left)
     auto cutoffArea = mainControlsArea.removeFromLeft(knobWidth);
@@ -118,15 +121,16 @@ void FilterComponent::resized()
     // ADSR section
     auto adsrHeight = 80;
     auto adsrArea = area.removeFromTop(adsrHeight);
-    auto adsrSliderWidth = (adsrArea.getWidth() - 5 * padding) / 4; // 4 sliders
-    
+    auto adsrSliderWidth = (adsrArea.getWidth() - 6 * padding) / 5; // 5 sliders
+
     filterAttackSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
     adsrArea.removeFromLeft(padding);
     filterDecaySlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
     adsrArea.removeFromLeft(padding);
     filterSustainSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
     adsrArea.removeFromLeft(padding);
-    filterReleaseSlider.setBounds(adsrArea.reduced(padding));
+    filterReleaseSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
+    adsrFilterAmountSlider.setBounds(adsrArea.reduced(padding));
     
     // Add vertical spacing
     area.removeFromTop(padding);

@@ -64,7 +64,7 @@ void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::Synthesiser
     oscillator.setFrequency(freq);
 
     // Set gain based on velocity to prevent clipping
-    gain.setGainLinear(velocity);
+    gain.setGainLinear(velocity * 0.3f);
 
     adsr.noteOn();
     filterADSR.noteOn(); // Start filter envelope
@@ -138,13 +138,10 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
             avgLfoValue += lfoData[startPos + i];
         }
         avgLfoValue /= samplesToProcess;
-
-        float filterEnvPercentage = 0.3f; // More conservative modulation amount
-        std::cout << filterADSREnabled << std::endl;
         
         // Calculate modulated cutoff frequency (only apply envelope if enabled)
         float modulatedCutoff = filterADSREnabled ? 
-            baseCutoff + filterEnvValue * filterEnvPercentage * (20000.0f - baseCutoff) :
+            baseCutoff + filterEnvValue * adsrFilterAmount * (20000.0f - baseCutoff) :
             baseCutoff;
 
         // Apply LFO modulation
@@ -165,10 +162,24 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     // Apply ADSR envelope
     adsr.applyEnvelopeToBuffer(synthBuffer, 0, numSamples);
 
-    // Add the synthesized audio to the output buffer
+    // Add the synthesized audio to the output buffer with soft limiting
     for (int channel = 0; channel < outputBuffer.getNumChannels(); ++channel)
     {
-        outputBuffer.addFrom(channel, startSample, synthBuffer, channel, 0, numSamples);
+        auto* outputData = outputBuffer.getWritePointer(channel, startSample);
+        auto* synthData = synthBuffer.getReadPointer(channel);
+        
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            float newSample = outputData[sample] + synthData[sample];
+            
+            // Soft limiting to prevent harsh clipping
+            if (newSample > 0.95f)
+                newSample = 0.95f + 0.05f * std::tanh((newSample - 0.95f) / 0.05f);
+            else if (newSample < -0.95f)
+                newSample = -0.95f + 0.05f * std::tanh((newSample + 0.95f) / 0.05f);
+                
+            outputData[sample] = newSample;
+        }
     }
 
     // Clear the voice if the envelope has finished
@@ -216,14 +227,11 @@ void SynthVoice::updateFilter(const float cutoff, const float resonance, const i
     }
 }
 
-void SynthVoice::updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release)
+void SynthVoice::updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release, const bool enabled, const float amount)
 {
     filterADSR.updateEnvelope(attack, decay, sustain, release);
-}
-
-void SynthVoice::updateFilterADSREnabled(const bool enabled)
-{
     filterADSREnabled = enabled;
+    adsrFilterAmount = amount;
 }
 
 void SynthVoice::updateLFO(const float frequency, const float amount)

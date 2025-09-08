@@ -16,6 +16,7 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
       adsrComponent(audioProcessor.getAPVTS()),   // Initialize adsrComponent first
       filterComponent(audioProcessor.getAPVTS()), // Initialize filterComponent second
       oscillatorComponent(audioProcessor.getAPVTS()),
+      lfoComponent(audioProcessor.getAPVTS()), // Initialize lfoComponent third
       keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
       scopeComponent(audioProcessor.getAudioBufferQueue())
 {
@@ -31,6 +32,7 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
     addAndMakeVisible(adsrComponent);
     addAndMakeVisible(filterComponent);
     addAndMakeVisible(oscillatorComponent);
+    addAndMakeVisible(lfoComponent);
 
     addAndMakeVisible (scopeComponent);
 
@@ -67,7 +69,7 @@ void MaxSynthAudioProcessorEditor::resized()
     editorArea.removeFromTop(padding); // Add spacing
 
     // Create horizontal layout for the control components
-    int numComponents = 3;
+    int numComponents = 4;
     auto componentWidth = (controlsArea.getWidth() - (numComponents + 1) * padding) / numComponents;
 
     // Add horizontal spacing
@@ -83,6 +85,11 @@ void MaxSynthAudioProcessorEditor::resized()
     // Oscillator Component (middle)
     auto oscillatorArea = controlsArea.removeFromLeft(componentWidth);
     oscillatorComponent.setBounds(oscillatorArea.reduced(padding));
+
+    oscillatorArea.removeFromLeft(padding);
+
+    auto lfoArea = controlsArea.removeFromLeft(componentWidth);
+    lfoComponent.setBounds(lfoArea.reduced(padding));
 
     // Add horizontal spacing
     controlsArea.removeFromLeft(padding);

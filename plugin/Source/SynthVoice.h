@@ -31,6 +31,7 @@ public:
     void updateFilterEnvelope(const float attack, const float decay, const float sustain, const float release, const bool enabled, const float amount);
     void updateFilterADSREnabled(const bool enabled);
     void updateLFO(const float frequency, const float amount);
+    void setGlobalLFOData(const float* lfoData);
     void updateWaveform(const int waveformType);
 
 private:
@@ -46,6 +47,7 @@ private:
     // LFO parameters
     float lfoFrequency = 2.0f;
     float lfoAmount = 0.2f; // Set a default amount that's actually audible
+    const float* globalLFOData = nullptr; // Pointer to global LFO data
     
     // Filter ADSR state
     bool filterADSREnabled = true; // Default to enabled
@@ -55,7 +57,7 @@ private:
     ADSRData filterADSR; // Filter envelope
 
     juce::dsp::Oscillator<float> oscillator { [](float x) { return std::sin(x); } }; // Oscillator - will be updated dynamically
-    juce::dsp::Oscillator<float> lfoOscillator { [](float x) { return std::sin(x); } }; // LFO oscillator
+    // juce::dsp::Oscillator<float> lfoOscillator { [](float x) { return std::sin(x); } }; // LFO oscillator
     juce::dsp::Gain<float> gain; // Gain for volume control
     juce::dsp::LadderFilter<float> filter; // Ladder filter for sound shaping
     

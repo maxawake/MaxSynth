@@ -20,6 +20,7 @@ set(MAXSYNTH_SOURCES
     Components/ADSRComponent.cpp
     Components/FilterComponent.cpp
     Components/OscillatorComponent.cpp
+    Components/LFOComponent.cpp
 
     # DSP / data
     Data/ADSRData.cpp

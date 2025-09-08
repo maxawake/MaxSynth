@@ -70,16 +70,7 @@ FilterComponent::FilterComponent(juce::AudioProcessorValueTreeState& apvts)
     filterReleaseSlider.setTextValueSuffix(" s");
     addAndMakeVisible(filterReleaseSlider);
 
-    // Set up LFO controls
-    lfoFreqAttachment = std::make_unique<sliderAttachment>(apvts, "lfoFreq", lfoFreqSlider);
-    lfoAmountAttachment = std::make_unique<sliderAttachment>(apvts, "lfoAmount", lfoAmountSlider);
-
-    setStyle(lfoFreqSlider);
-    lfoFreqSlider.setTextValueSuffix(" Hz");
-    addAndMakeVisible(lfoFreqSlider);
-
-    setStyle(lfoAmountSlider);
-    addAndMakeVisible(lfoAmountSlider);
+    
 }
 
 void FilterComponent::paint(juce::Graphics& g)
@@ -131,16 +122,6 @@ void FilterComponent::resized()
     adsrArea.removeFromLeft(padding);
     filterReleaseSlider.setBounds(adsrArea.removeFromLeft(adsrSliderWidth).reduced(padding));
     adsrFilterAmountSlider.setBounds(adsrArea.reduced(padding));
-    
-    // Add vertical spacing
-    area.removeFromTop(padding);
-    
-    // LFO section (remaining space)
-    auto lfoSliderWidth = (area.getWidth() - 3 * padding) / 2;
-    
-    lfoFreqSlider.setBounds(area.removeFromLeft(lfoSliderWidth).reduced(padding));
-    area.removeFromLeft(padding);
-    lfoAmountSlider.setBounds(area.reduced(padding));
 }
 
 FilterComponent::~FilterComponent()

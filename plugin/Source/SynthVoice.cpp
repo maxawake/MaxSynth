@@ -39,8 +39,8 @@ void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int numCh
     oscillator.prepare(spec);
     oscillator.setFrequency(freq);
 
-    lfoOscillator.prepare(spec); // Use the same sample rate as the main oscillator
-    lfoOscillator.setFrequency(lfoFrequency);
+    // lfoOscillator.prepare(spec); // Use the same sample rate as the main oscillator
+    // lfoOscillator.setFrequency(lfoFrequency);
 
     gain.prepare(spec);
     gain.setGainLinear(volume); // Set a safe default volume
@@ -112,14 +112,20 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     gain.process(synthContext);
 
     // Create a buffer for LFO processing
-    juce::AudioBuffer<float> lfoBuffer(1, numSamples);
-    lfoBuffer.clear();
-    juce::dsp::AudioBlock<float> lfoBlock(lfoBuffer);
-    juce::dsp::ProcessContextReplacing<float> lfoContext(lfoBlock);
-
-    // Generate LFO samples for the entire block
-    lfoOscillator.process(lfoContext);
-    auto *lfoData = lfoBuffer.getReadPointer(0);
+    // Use global LFO data if available, otherwise fall back to local generation
+    const float* lfoData = globalLFOData;
+    std::unique_ptr<juce::AudioBuffer<float>> localLfoBuffer;
+    
+    // if (lfoData == nullptr)
+    // {
+    //     // Fallback: generate local LFO if global data isn't available
+    //     localLfoBuffer = std::make_unique<juce::AudioBuffer<float>>(1, numSamples);
+    //     localLfoBuffer->clear();
+    //     juce::dsp::AudioBlock<float> lfoBlock(*localLfoBuffer);
+    //     juce::dsp::ProcessContextReplacing<float> lfoContext(lfoBlock);
+    //     lfoOscillator.process(lfoContext);
+    //     lfoData = localLfoBuffer->getReadPointer(0);
+    // }
 
     // Process filter in small chunks to balance performance and modulation smoothness
     const int chunkSize = 32; // Process 32 samples at a time
@@ -238,7 +244,12 @@ void SynthVoice::updateLFO(const float frequency, const float amount)
 {
     lfoFrequency = frequency;
     lfoAmount = amount;
-    lfoOscillator.setFrequency(frequency);
+    // lfoOscillator.setFrequency(frequency);
+}
+
+void SynthVoice::setGlobalLFOData(const float* lfoData)
+{
+    globalLFOData = lfoData;
 }
 
 void SynthVoice::updateWaveform(const int waveformType)

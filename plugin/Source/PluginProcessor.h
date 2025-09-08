@@ -59,6 +59,9 @@ public:
     
     // Scope data access
     AudioBufferQueue<float>& getAudioBufferQueue() noexcept { return audioBufferQueue; }
+    
+    // Global LFO access
+    const float* getGlobalLFOBuffer() const noexcept { return globalLFOBuffer.data(); }
 
 private:
     juce::Synthesiser synth; 
@@ -70,6 +73,11 @@ private:
     // Scope data collection
     AudioBufferQueue<float> audioBufferQueue;
     ScopeDataCollector<float> scopeDataCollector { audioBufferQueue };
+    
+    // Global LFO
+    juce::dsp::Oscillator<float> globalLFO { [](float x) { return std::sin(x); } };
+    std::vector<float> globalLFOBuffer;
+    double currentSampleRate = 44100.0;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MaxSynthAudioProcessor)

@@ -15,6 +15,7 @@
 #include "../Components/FilterComponent.h"
 #include "../Components/OscillatorComponent.h"
 #include "../Components/ScopeComponent.h"
+#include "../Components/LFOComponent.h"
 
 class MaxSynthAudioProcessorEditor : public juce::AudioProcessorEditor,
                                      private juce::MidiInputCallback,
@@ -66,6 +67,7 @@ private:
     ADSRComponent adsrComponent;
     FilterComponent filterComponent;
     OscillatorComponent oscillatorComponent;
+    LFOComponent lfoComponent;
 
     juce::AudioDeviceManager deviceManager; 
     juce::MidiKeyboardState keyboardState;

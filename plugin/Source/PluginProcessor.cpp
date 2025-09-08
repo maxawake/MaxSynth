@@ -103,6 +103,18 @@ void MaxSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 {   
     synth.setCurrentPlaybackSampleRate(sampleRate);
     midiCollector.reset(sampleRate);  // Add this line
+    
+    // Prepare global LFO
+    currentSampleRate = sampleRate;
+    globalLFOBuffer.resize(samplesPerBlock);
+    
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = 1;
+    
+    globalLFO.prepare(spec);
+    globalLFO.setFrequency(2.0f); // Default frequency
 
     for (int i = 0; i < synth.getNumVoices(); ++i)
     {
@@ -152,46 +164,62 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+    // In case we have more outputs than inputs, this code clears any output
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    // Get MIDI messages
     midiCollector.removeNextBlockOfMessages(midiMessages, buffer.getNumSamples());
 
-    // Debug MIDI messages
-    for (const auto metadata : midiMessages)
+    // Oscillator parameters
+    auto& waveform = *apvts.getRawParameterValue("waveform");
+
+    // ADSR parameters
+    auto& attack = *apvts.getRawParameterValue("attack");
+    auto& decay = *apvts.getRawParameterValue("decay");
+    auto& sustain = *apvts.getRawParameterValue("sustain");
+    auto& release = *apvts.getRawParameterValue("release");
+
+    // Filter parameters
+    auto& filterCutoff = *apvts.getRawParameterValue("filterCutoff");
+    auto& filterResonance = *apvts.getRawParameterValue("filterResonance");
+    auto& filterMode = *apvts.getRawParameterValue("filterMode");
+
+    // Get filter envelope and LFO parameters
+    auto& filterADSREnabled = *apvts.getRawParameterValue("filterADSREnabled");
+    auto& filterAttack = *apvts.getRawParameterValue("filterAttack");
+    auto& filterDecay = *apvts.getRawParameterValue("filterDecay");
+    auto& filterSustain = *apvts.getRawParameterValue("filterSustain");
+    auto& filterRelease = *apvts.getRawParameterValue("filterRelease");
+    auto& adsrFilterAmount = *apvts.getRawParameterValue("adsrFilterAmount");
+
+    // LFO parameters
+    auto& lfoFreq = *apvts.getRawParameterValue("lfoFreq");
+    auto& lfoAmount = *apvts.getRawParameterValue("lfoAmount");
+    auto& lfoTarget = *apvts.getRawParameterValue("lfoTarget");
+
+    // Generate global LFO data for this block
+    globalLFO.setFrequency(lfoFreq);
+    
+    // Resize buffer if needed
+    if (globalLFOBuffer.size() != buffer.getNumSamples())
+        globalLFOBuffer.resize(buffer.getNumSamples());
+    
+    // Generate LFO samples
+    for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
-        auto message = metadata.getMessage();
-        std::cout << "MIDI: " << message.getDescription() << std::endl;
+        globalLFOBuffer[i] = globalLFO.processSample(0.0f);
     }
 
+    // Update each voice with the current parameters
     for (auto i = 0; i < synth.getNumVoices(); ++i)
     {
         if (auto* voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
         {
-            auto& attack = *apvts.getRawParameterValue("attack");
-            auto& decay = *apvts.getRawParameterValue("decay");
-            auto& sustain = *apvts.getRawParameterValue("sustain");
-            auto& release = *apvts.getRawParameterValue("release");
-
-            auto& filterCutoff = *apvts.getRawParameterValue("filterCutoff");
-            auto& filterResonance = *apvts.getRawParameterValue("filterResonance");
-            auto& filterMode = *apvts.getRawParameterValue("filterMode");
-            auto& waveform = *apvts.getRawParameterValue("waveform");
-
-            // Get filter envelope and LFO parameters
-            auto& filterADSREnabled = *apvts.getRawParameterValue("filterADSREnabled");
-            auto& filterAttack = *apvts.getRawParameterValue("filterAttack");
-            auto& filterDecay = *apvts.getRawParameterValue("filterDecay");
-            auto& filterSustain = *apvts.getRawParameterValue("filterSustain");
-            auto& filterRelease = *apvts.getRawParameterValue("filterRelease");
-            auto& lfoFreq = *apvts.getRawParameterValue("lfoFreq");
-            auto& lfoAmount = *apvts.getRawParameterValue("lfoAmount");
-            auto& adsrFilterAmount = *apvts.getRawParameterValue("adsrFilterAmount");
-
             voice->updateEnvelope(attack, decay, sustain, release);
             voice->updateFilter(filterCutoff, filterResonance, static_cast<int>(filterMode));
             voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease, filterADSREnabled > 0.5f, adsrFilterAmount);
-            voice->updateLFO(lfoFreq, lfoAmount);
+            voice->setGlobalLFOData(globalLFOBuffer.data()); // Pass global LFO data
             voice->updateWaveform(static_cast<int>(waveform));
         }
     }

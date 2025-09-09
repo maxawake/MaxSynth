@@ -106,7 +106,12 @@ target_compile_definitions(MaxSynth
     PRIVATE
         JUCE_VST3_CAN_REPLACE_VST2=0
         JucePlugin_Build_VST=0
+        JucePlugin_Build_VST3=1
         JucePlugin_Build_Standalone=1
+
+        # If you don't need image loading
+        JUCE_INCLUDE_JPEGLIB_CODE=0
+        JUCE_INCLUDE_PNGLIB_CODE=0
 )
 # ---- Build-type defines to mirror Projucer flags ----
 # JUCE sets NDEBUG for Release automatically. Add the same feature toggles you had:

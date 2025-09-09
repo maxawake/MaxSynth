@@ -299,18 +299,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
 
     // Filter ADSR parameters
-    parameters.push_back(std::make_unique<juce::AudioParameterBool>("filterADSREnabled", "Filter ADSR Enabled", true));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterAttack", "Filter Attack", 0.001f, 1.0f, 0.1f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterDecay", "Filter Decay", 0.001f, 1.0f, 0.2f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterSustain", "Filter Sustain", 0.0f, 1.0f, 0.7f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterRelease", "Filter Release", 0.001f, 3.0f, 0.3f));
+    parameters.push_back(std::make_unique<juce::AudioParameterBool>("filterADSREnabled", "Filter ADSR Enabled", false));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterAttack", "Filter Attack", 0.0f, 1.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterDecay", "Filter Decay", 0.01f, 1.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterSustain", "Filter Sustain", 0.0f, 1.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterRelease", "Filter Release", 0.0f, 1.0f, 0.0f));
 
     // LFO parameters
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoFreq", "LFO Frequency", 0.1f, 30.0f, 2.0f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoAmount", "LFO Amount", 0.0f, 1.0f, 0.3f)); // Default to 0.3 for audible effect
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoAmount", "LFO Amount", 0.0f, 1.0f, 0.0f)); // Default to 0.0 for no effect
 
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("masterGain", "Master Gain", 0.0f, 1.0f, 0.8f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("adsrFilterAmount", "ADSR Filter Amount", 0.0f, 1.0f, 0.8f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("adsrFilterAmount", "ADSR Filter Amount", 0.0f, 1.0f, 0.0f));
 
     return { parameters.begin(), parameters.end() };
 }

@@ -38,14 +38,14 @@ set(MAXSYNTH_SOURCES
 # - IsSynth, wants MIDI input, not a MIDI effect, no MIDI output
 # - Company/product metadata & 4-char codes
 juce_add_plugin(MaxSynth
-    COMPANY_NAME                "yourcompany"
-    COMPANY_WEBSITE             "www.yourcompany.com"
+    COMPANY_NAME                "MaxAudio"
+    COMPANY_WEBSITE             ""
     COMPANY_EMAIL               ""
-    COMPANY_CODE                Manu                 # 0x4d616e75
+    COMPANY_CODE                Maxa                 # Changed to be unique
     PLUGIN_NAME                 "MaxSynth"
-    PLUGIN_DESCRIPTION          "MaxSynth"
-    PLUGIN_CODE                 Bfsb                 # 0x42667362
-    BUNDLE_ID                   com.yourcompany.MaxSynth
+    PLUGIN_DESCRIPTION          "MaxSynth Audio Synthesizer"
+    PLUGIN_CODE                 Mxsy                 # Changed to be unique
+    BUNDLE_ID                   com.maxaudio.MaxSynth
 
     VERSION                     ${PROJECT_VERSION}
 
@@ -61,10 +61,16 @@ juce_add_plugin(MaxSynth
 
     # VST3 metadata:
     VST3_CATEGORIES             "Instrument|Synth"
-    # If you also want legacy VST2 category reflected in code, JUCE handles VST3 only.
+    
+    # Important: Ensure proper plugin identification
+    PLUGIN_MANUFACTURER_CODE    Maxa
+    PLUGIN_SUBTYPE_CODE         Mxsy
 
     # Nice to have:
     COPY_PLUGIN_AFTER_BUILD     TRUE
+    
+    # Fix VST3 binary name for better DAW compatibility
+    VST3_AUTO_MANIFEST          FALSE
 )
 
 target_sources(MaxSynth PRIVATE ${MAXSYNTH_SOURCES})

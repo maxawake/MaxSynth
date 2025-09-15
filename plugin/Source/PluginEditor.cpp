@@ -20,6 +20,7 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
       keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
       scopeComponent(audioProcessor.getAudioBufferQueue())
 {
+    setLookAndFeel(&otherLookAndFeel);
     setSize(900, 700); // Increased height for three-row layout
     setResizable(true, true);
     setResizeLimits(600, 400, 2000, 1500); // Increased minimum size

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "Style.h"
 #include "../Components/ADSRComponent.h"
 #include "../Components/FilterComponent.h"
 #include "../Components/OscillatorComponent.h"
@@ -75,6 +76,7 @@ private:
     ScopeComponent<float> scopeComponent;
 
     juce::ComboBox waveformSelector;
+    OtherLookAndFeel otherLookAndFeel;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> waveformAttachment;
 

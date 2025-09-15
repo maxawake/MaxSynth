@@ -123,6 +123,8 @@ void MaxSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
             voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
         }
     }
+    synth.setNoteStealingEnabled(false);
+    std::cout << synth.isNoteStealingEnabled() << std::endl;
 }
 
 void MaxSynthAudioProcessor::releaseResources()

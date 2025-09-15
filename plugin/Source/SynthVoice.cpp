@@ -59,15 +59,34 @@ bool SynthVoice::canPlaySound(juce::SynthesiserSound *sound)
 
 void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound *sound, int currentPitchWheelPosition)
 {
+   
+    // Reset all envelopes completely
+    adsr.reset();
+    filterADSR.reset();
+    
     // Start the note with the given MIDI note number and velocity
     freq = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    oscillator1.setFrequency(freq);
-    oscillator2.setFrequency(freq);
-    oscillator3.setFrequency(freq);
+    
+    // Reset oscillator phases to avoid frequency sweeps
+    oscillator1.reset();
+    oscillator2.reset();
+    oscillator3.reset();
+    
+    // Set frequencies
+    oscillator1.setFrequency(freq, true);
+    oscillator2.setFrequency(freq, true);
+    oscillator3.setFrequency(freq, true);
 
     // Set gain based on velocity to prevent clipping
     gain.setGainLinear(velocity * 0.3f);
+    
+    // Reset filter state to avoid frequency sweeps
+    filter.reset();
+    
+    // Initialize filter with base cutoff to ensure consistent starting point
+    filter.setCutoffFrequencyHz(baseCutoff);
 
+    // NOW start the envelopes (after everything is reset)
     adsr.noteOn();
     filterADSR.noteOn(); // Start filter envelope
 }
@@ -77,6 +96,14 @@ void SynthVoice::stopNote(float velocity, bool allowTailOff)
     // Stop the note with the given velocity
     adsr.noteOff();
     filterADSR.noteOff();
+    
+    // If not allowing tail off, force immediate stop
+    if (!allowTailOff)
+    {
+        adsr.reset();
+        filterADSR.reset();
+        clearCurrentNote(); // Mark voice as not playing any note
+    }
 }
 
 void SynthVoice::pitchWheelMoved(int newValue)
@@ -111,6 +138,7 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     // Apply gain
     gain.process(synthContext);
 
+    // TODO Make this block its own function
     // Use global LFO data if available, otherwise fall back to local generation
     const float* lfoData = globalLFOData;
 
@@ -151,6 +179,7 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
         juce::dsp::ProcessContextReplacing<float> chunkContext(chunkBlock);
         filter.process(chunkContext);
     }
+    // TODO until here
 
     // Apply ADSR envelope
     adsr.applyEnvelopeToBuffer(synthBuffer, 0, numSamples);
@@ -165,7 +194,8 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
         {
             float newSample = outputData[sample] + synthData[sample];
             
-            // Soft limiting to prevent harsh clipping
+            // Soft limiting to prevent harsh clipping 
+            // TODO Use this outside of voice
             if (newSample > 0.95f)
                 newSample = 0.95f + 0.05f * std::tanh((newSample - 0.95f) / 0.05f);
             else if (newSample < -0.95f)

@@ -40,13 +40,17 @@ void ADSRComponent::paint(juce::Graphics& g)
 }
 
 void ADSRComponent::resized()
-{
-    auto area = getLocalBounds().reduced(8);
+{ 
+    auto padding = 10;
+    auto area = getLocalBounds().reduced(padding);
 
-    attackSlider.setBounds(area.removeFromLeft(40).reduced(8));
-    decaySlider.setBounds(area.removeFromLeft(40).reduced(8));
-    sustainSlider.setBounds(area.removeFromLeft(40).reduced(8));
-    releaseSlider.setBounds(area.removeFromLeft(40).reduced(8));
+    int numComponents = 4;
+    auto componentWidth = (area.getWidth() - (numComponents) * padding) / numComponents;
+
+    attackSlider.setBounds(area.removeFromLeft(componentWidth).reduced(padding));
+    decaySlider.setBounds(area.removeFromLeft(componentWidth).reduced(padding));
+    sustainSlider.setBounds(area.removeFromLeft(componentWidth).reduced(padding));
+    releaseSlider.setBounds(area.removeFromLeft(componentWidth).reduced(padding));
 }
 
 void ADSRComponent::setStyle(juce::Slider& slider)

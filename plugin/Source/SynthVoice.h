@@ -32,11 +32,16 @@ public:
     void updateFilterADSREnabled(const bool enabled);
     void setGlobalLFOData(const float* lfoData, const float amount);
     void updateWaveform(const int waveformType, const int oscIndex);
+    void setOscEnabled(const bool osc1, const bool osc2, const bool osc3);
 
 private:
     float freq = 440.0f; // Frequency of the note
     float volume = 1.0f; // Volume of the note
     int currentWaveform = 0; // Current waveform type (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
+
+    bool osc1Enabled = true; // Is oscillator 1 enabled
+    bool osc2Enabled = true; // Is oscillator 2 enabled
+    bool osc3Enabled = true; // Is oscillator 3 enabled
     
     // Filter parameters
     float baseCutoff = 1000.0f; // Base cutoff frequency

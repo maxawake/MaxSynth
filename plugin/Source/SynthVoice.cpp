@@ -131,9 +131,12 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float> &outputBuffer, int sta
     juce::dsp::ProcessContextReplacing<float> synthContext(synthBlock);
 
     // Generate oscillator output
-    oscillator1.process(synthContext);
-    oscillator2.process(synthContext);
-    oscillator3.process(synthContext);
+    if (osc1Enabled)
+        oscillator1.process(synthContext);
+    if (osc2Enabled)
+        oscillator2.process(synthContext);
+    if (osc3Enabled)
+        oscillator3.process(synthContext);
 
     // Apply gain
     gain.process(synthContext);
@@ -302,4 +305,11 @@ void SynthVoice::updateWaveform(const int waveformType, const int oscIndex)
                               { return std::sin(x); });
         break;
     }
+}
+
+void SynthVoice::setOscEnabled(const bool osc1, const bool osc2, const bool osc3)
+{
+    osc1Enabled = osc1;
+    osc2Enabled = osc2;
+    osc3Enabled = osc3; 
 }

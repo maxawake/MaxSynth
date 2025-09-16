@@ -8,7 +8,7 @@ class OtherLookAndFeel : public juce::LookAndFeel_V4
 public:
     OtherLookAndFeel()
     {
-        setColour (juce::Slider::thumbColourId, juce::Colours::red);
+        setColour (juce::Slider::thumbColourId, juce::Colours::darkgrey);
     }
 
     void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
@@ -23,11 +23,11 @@ public:
         auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
 
         // fill
-        g.setColour (juce::Colours::orange);
+        g.setColour (juce::Colours::darkgrey);
         g.fillEllipse (rx, ry, rw, rw);
 
         // outline
-        g.setColour (juce::Colours::red);
+        g.setColour (juce::Colours::aliceblue);
         g.drawEllipse (rx, ry, rw, rw, 1.0f);
 
         juce::Path p;
@@ -37,7 +37,7 @@ public:
         p.applyTransform (juce::AffineTransform::rotation (angle).translated (centreX, centreY));
 
         // pointer
-        g.setColour (juce::Colours::yellow);
+        g.setColour (juce::Colours::white);
         g.fillPath (p);
     }
 

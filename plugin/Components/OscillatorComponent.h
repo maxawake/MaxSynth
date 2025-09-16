@@ -24,6 +24,7 @@ public:
 private:
     
     using comboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+    using buttonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
     juce::ComboBox waveformSelector;
     std::unique_ptr<comboBoxAttachment> waveformAttachment;
@@ -33,6 +34,13 @@ private:
 
     juce::ComboBox waveformSelector3;
     std::unique_ptr<comboBoxAttachment> waveformAttachment3;
+
+    juce::TextButton osc1ToggleButton;
+    juce::TextButton osc2ToggleButton;
+    juce::TextButton osc3ToggleButton;
+    std::unique_ptr<buttonAttachment> osc1ToggleAttachment;
+    std::unique_ptr<buttonAttachment> osc2ToggleAttachment;
+    std::unique_ptr<buttonAttachment> osc3ToggleAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscillatorComponent)
 };

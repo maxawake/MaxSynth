@@ -178,6 +178,10 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto& waveform2 = *apvts.getRawParameterValue("waveform2");
     auto& waveform3 = *apvts.getRawParameterValue("waveform3");
 
+    auto& osc1Enabled = *apvts.getRawParameterValue("osc1Enabled");
+    auto& osc2Enabled = *apvts.getRawParameterValue("osc2Enabled");
+    auto& osc3Enabled = *apvts.getRawParameterValue("osc3Enabled");
+
     // ADSR parameters
     auto& attack = *apvts.getRawParameterValue("attack");
     auto& decay = *apvts.getRawParameterValue("decay");
@@ -225,9 +229,14 @@ void MaxSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
             voice->updateFilterEnvelope(filterAttack, filterDecay, filterSustain, filterRelease, filterADSREnabled > 0.5f, adsrFilterAmount);
             voice->setGlobalLFOData(globalLFOBuffer.data(), lfoAmount); // Pass global LFO data
             
-            voice->updateWaveform(static_cast<int>(waveform), 1); // Update primary oscillator
-            voice->updateWaveform(static_cast<int>(waveform2), 2); // Update secondary oscillator
-            voice->updateWaveform(static_cast<int>(waveform3), 3); // Update tertiary oscillator
+            if (osc1Enabled == true)
+                voice->updateWaveform(static_cast<int>(waveform), 1); // Update primary oscillator
+            if (osc2Enabled == true)
+                voice->updateWaveform(static_cast<int>(waveform2), 2); // Update secondary oscillator
+            if (osc3Enabled == true)
+                voice->updateWaveform(static_cast<int>(waveform3), 3); // Update tertiary oscillator
+
+            voice->setOscEnabled(osc1Enabled, osc2Enabled, osc3Enabled);
         }
     }
 
@@ -277,21 +286,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
 
-    // More practical ranges: Attack, Decay, Release in seconds (0.01 to 5.0 seconds)
-    // Sustain as a level (0.0 to 1.0)
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.001f, 1.0f, 0.01f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.001f, 1.0f, 0.2f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.7f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.001f, 3.0f, 0.1f));
-
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 
-        juce::NormalisableRange<float>(20.0f, 20000.0f, 0.1f, 0.3f), 20000.0f));
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.0f, 0.0f));
-
-    // Filter mode parameter (0=LPF12, 1=LPF24, 2=HPF12, 3=HPF24, 4=BPF12, 5=BPF24)
-    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("filterMode", "Filter Mode", 
-        juce::StringArray{"LPF 12dB", "LPF 24dB", "HPF 12dB", "HPF 24dB", "BPF 12dB", "BPF 24dB"}, 0));
-
     // Waveform parameter (0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise)
     parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform", "Waveform", 
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
@@ -300,6 +294,26 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
     parameters.push_back(std::make_unique<juce::AudioParameterChoice>("waveform3", "Waveform 3", 
         juce::StringArray{"Sine", "Square", "Saw", "Triangle", "Noise"}, 0));
 
+    parameters.push_back(std::make_unique<juce::AudioParameterBool>("osc1Enabled", "OSC 1 Enabled", true));
+    parameters.push_back(std::make_unique<juce::AudioParameterBool>("osc2Enabled", "OSC 2 Enabled", false));
+    parameters.push_back(std::make_unique<juce::AudioParameterBool>("osc3Enabled", "OSC 3 Enabled", false));
+
+    // ADSR parameters
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("attack", "Attack", 0.001f, 1.0f, 0.01f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("decay", "Decay", 0.001f, 1.0f, 0.2f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("sustain", "Sustain", 0.0f, 1.0f, 0.7f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("release", "Release", 0.001f, 3.0f, 0.1f));
+
+    // Filter parameters
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterCutoff", "Filter Cutoff", 
+        juce::NormalisableRange<float>(50.0f, 20000.0f, 0.1f, 0.3f), 20000.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterResonance", "Filter Resonance", 0.0f, 1.0f, 0.0f));
+
+    // Filter mode parameter (0=LPF12, 1=LPF24, 2=HPF12, 3=HPF24, 4=BPF12, 5=BPF24)
+    parameters.push_back(std::make_unique<juce::AudioParameterChoice>("filterMode", "Filter Mode", 
+        juce::StringArray{"LPF 12dB", "LPF 24dB", "HPF 12dB", "HPF 24dB", "BPF 12dB", "BPF 24dB"}, 0));
+
+    
     // Filter ADSR parameters
     parameters.push_back(std::make_unique<juce::AudioParameterBool>("filterADSREnabled", "Filter ADSR Enabled", false));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterAttack", "Filter Attack", 0.0f, 1.0f, 0.0f));
@@ -308,7 +322,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaxSynthAudioProcessor::crea
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("filterRelease", "Filter Release", 0.0f, 1.0f, 0.0f));
 
     // LFO parameters
-    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoFreq", "LFO Frequency", 0.1f, 30.0f, 2.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoFreq", "LFO Frequency", 0.1f, 20.0f, 2.0f));
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("lfoAmount", "LFO Amount", 0.0f, 1.0f, 0.0f)); // Default to 0.0 for no effect
 
     parameters.push_back(std::make_unique<juce::AudioParameterFloat>("masterGain", "Master Gain", 0.0f, 1.0f, 0.8f));

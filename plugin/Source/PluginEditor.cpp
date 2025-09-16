@@ -21,7 +21,7 @@ MaxSynthAudioProcessorEditor::MaxSynthAudioProcessorEditor(MaxSynthAudioProcesso
       scopeComponent(audioProcessor.getAudioBufferQueue())
 {
     setLookAndFeel(&otherLookAndFeel);
-    setSize(900, 700); // Increased height for three-row layout
+    setSize(1200, 500); // Increased height for three-row layout
     setResizable(true, true);
     setResizeLimits(600, 400, 2000, 1500); // Increased minimum size
 
@@ -71,32 +71,27 @@ void MaxSynthAudioProcessorEditor::resized()
 
     // Create horizontal layout for the control components
     int numComponents = 4;
-    auto componentWidth = (controlsArea.getWidth() - (numComponents + 1) * padding) / numComponents;
-
-    // Add horizontal spacing
-    controlsArea.removeFromLeft(padding);
-
-    // ADSR Component (left)
-    auto adsrArea = controlsArea.removeFromLeft(componentWidth);
-    adsrComponent.setBounds(adsrArea.reduced(padding));
-
-    // Add horizontal spacing
-    controlsArea.removeFromLeft(padding);
+    auto componentWidth = (controlsArea.getWidth() - (numComponents -1) * padding) / numComponents;
 
     // Oscillator Component (middle)
+    controlsArea.removeFromLeft(padding);
     auto oscillatorArea = controlsArea.removeFromLeft(componentWidth);
     oscillatorComponent.setBounds(oscillatorArea.reduced(padding));
 
-    oscillatorArea.removeFromLeft(padding);
+    // Filter Component
+    controlsArea.removeFromLeft(padding);
+    auto filterArea = controlsArea.removeFromLeft(componentWidth);
+    filterComponent.setBounds(filterArea.reduced(padding));
 
+    // LFO Component
+    controlsArea.removeFromLeft(padding);
     auto lfoArea = controlsArea.removeFromLeft(componentWidth);
     lfoComponent.setBounds(lfoArea.reduced(padding));
 
-    // Add horizontal spacing
+    // ADSR Component
     controlsArea.removeFromLeft(padding);
-
-    // Filter Component (right - takes remaining space)
-    filterComponent.setBounds(controlsArea.reduced(padding));
+    auto adsrArea = controlsArea.removeFromLeft(componentWidth);
+    adsrComponent.setBounds(adsrArea.reduced(padding));      
 
     // Row 2: Scope in the middle
     auto scopeArea = editorArea.removeFromTop(scopeHeight);

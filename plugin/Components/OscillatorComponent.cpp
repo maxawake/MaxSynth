@@ -20,6 +20,22 @@ OscillatorComponent::OscillatorComponent(juce::AudioProcessorValueTreeState& apv
     setLabels(waveformSelector);
     setLabels(waveformSelector2);
     setLabels(waveformSelector3);
+
+    // Set up buttons
+    osc1ToggleButton.setButtonText("OSC 1");
+    osc1ToggleButton.setClickingTogglesState(true); // Make it a toggle button
+    osc1ToggleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "osc1Enabled", osc1ToggleButton);
+    addAndMakeVisible(osc1ToggleButton);
+
+    osc2ToggleButton.setButtonText("OSC 2");
+    osc2ToggleButton.setClickingTogglesState(true); // Make it a toggle button
+    osc2ToggleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "osc2Enabled", osc2ToggleButton);
+    addAndMakeVisible(osc2ToggleButton);
+
+    osc3ToggleButton.setButtonText("OSC 3");
+    osc3ToggleButton.setClickingTogglesState(true); // Make it a toggle
+    osc3ToggleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "osc3Enabled", osc3ToggleButton);
+    addAndMakeVisible(osc3ToggleButton);
 }
 
 OscillatorComponent::~OscillatorComponent()
@@ -33,12 +49,27 @@ void OscillatorComponent::paint(juce::Graphics& g)
 
 void OscillatorComponent::resized()
 {
-    auto area = getLocalBounds();
-    waveformSelector.setBounds(area.removeFromTop(30).reduced(6));
-    area.removeFromTop(30);
-    waveformSelector2.setBounds(area.removeFromTop(30).reduced(6));
-    area.removeFromTop(30);
-    waveformSelector3.setBounds(area.removeFromTop(30).reduced(6));
+    auto padding = 10;
+    auto size = 30;
+    auto area = getLocalBounds().reduced(padding);
+
+    auto numComponents = 3;
+    auto componentWidth = (area.getWidth() - (numComponents - 1) * padding) / numComponents;
+
+    auto left = area.removeFromLeft(componentWidth);
+    auto right = area.removeFromRight(componentWidth);
+
+    osc1ToggleButton.setBounds(left.removeFromTop(size));
+    left.removeFromTop(padding);
+    osc2ToggleButton.setBounds(left.removeFromTop(size));
+    left.removeFromTop(padding);
+    osc3ToggleButton.setBounds(left.removeFromTop(size));
+
+    waveformSelector.setBounds(right.removeFromTop(size));
+    right.removeFromTop(padding);
+    waveformSelector2.setBounds(right.removeFromTop(size));
+    right.removeFromTop(padding);
+    waveformSelector3.setBounds(right.removeFromTop(size));
 }
 
 void OscillatorComponent::setLabels(juce::ComboBox& box)
